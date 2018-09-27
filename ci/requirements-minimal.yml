@@ -1,0 +1,10 @@
+name: test_env
+channels:
+  - anaconda
+dependencies:
+  - python=3.5
+  - flake8
+  - pytest=3.1
+  - pip:
+    - coveralls
+    - pytest-cov
