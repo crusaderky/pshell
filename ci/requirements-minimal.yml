@@ -5,6 +5,7 @@ dependencies:
   - python=3.5
   - flake8
   - pytest=3.1
+  - psutil=3.2
   - pip:
     - coveralls
     - pytest-cov

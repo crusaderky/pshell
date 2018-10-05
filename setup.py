@@ -32,7 +32,7 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering',
 ]
 
-INSTALL_REQUIRES = []
+INSTALL_REQUIRES = ['psutil >= 3.2']
 TESTS_REQUIRE = ['pytest >= 3.1']
 
 DESCRIPTION = "pshell"
