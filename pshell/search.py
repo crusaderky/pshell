@@ -52,8 +52,11 @@ def glob(pathname, *, min_results=0, max_results=None):
     :raises FileMatchError:
         if got less results than min_results or more than max_results
     """
-    assert min_results >= 0
-    assert max_results is None or max_results >= min_results
+    if min_results < 0:
+        raise ValueError("min_results must be greater than 0")
+    if max_results is not None and max_results < min_results:
+        raise ValueError("max_results must be greater or equal to min_results")
+
     results = _glob.glob(resolve_env(pathname), recursive=True)
     if (len(results) < min_results or
             (max_results is not None and len(results) > max_results)):
@@ -85,8 +88,10 @@ def iglob(pathname, *, min_results=0, max_results=None):
         FileMatchError: File match test*.txt produced 3 or more results,
                         expected up to 2
     """
-    assert min_results >= 0
-    assert max_results is None or max_results >= min_results
+    if min_results < 0:
+        raise ValueError("min_results must be greater than 0")
+    if max_results is not None and max_results < min_results:
+        raise ValueError("max_results must be greater or equal to min_results")
 
     count = 0
     for result in _glob.iglob(resolve_env(pathname), recursive=True):

@@ -19,10 +19,10 @@ def concatenate(output_fname, *input_fnames):
 
     # Check if the last line of the first file ends with a \n
     try:
-        with pshell_open(output_fname, 'r') as fh:
+        with pshell_open(output_fname, 'rb') as fh:
             # Read last character
             fh.seek(-1, 2)
-            prepend_newline = fh.read() != '\n'
+            prepend_newline = fh.read() != b'\n'
     except FileNotFoundError as e:
         logging.info("%s", e)
         prepend_newline = False

@@ -103,8 +103,10 @@ def find_procs_by_cmdline(*cmdlines):
        e.g. ``find_procs_by_cmdline('$RW_HOME')`` won't be able to match
        ``cd $RW_HOME/bin && ./runrw``.
 
-    :param cmdlines: one or more paths command lines to search for
-    :returns: list of psutil.Process objects.
+    :param cmdlines:
+        one or more paths command lines to search for
+    :returns:
+        list of psutil.Process objects.
 
     See also: http://code.google.com/p/psutil/wiki/Documentation
     """
