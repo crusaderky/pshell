@@ -11,7 +11,7 @@ from .env import resolve_env
 
 
 __all__ = ('remove', 'chdir', 'pushd', 'move', 'copy', 'backup', 'symlink',
-           'exists', 'lexists', 'mkdir')
+           'exists', 'lexists', 'mkdir', 'owner')
 
 
 def remove(path, *, recursive=False, force=True, rename_on_fail=False):

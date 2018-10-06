@@ -68,4 +68,3 @@ def test_override_env():
             assert os.getenv('landgbashTEST3') == 'foo'
             raise StubError()
     assert 'landgbashTEST3' not in os.environ
-

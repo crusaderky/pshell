@@ -1,3 +1,4 @@
+import getpass
 import glob
 import os
 import subprocess
@@ -305,3 +306,10 @@ def test_mkdir(tmpdir):
     sh.mkdir('$UNITTEST_BASH/middle/test_mkdir',
              parents=True, force=False)
     assert os.path.isdir('%s/middle/test_mkdir' % tmpdir)
+
+
+def test_owner(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    with open('%s/test_owner' % tmpdir, 'w'):
+        pass
+    assert sh.owner('$UNITTEST_BASH/test_owner') == getpass.getuser()
