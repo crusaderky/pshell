@@ -4,13 +4,7 @@ import sys
 import time
 import pytest
 import pshell as sh
-
-
-class StubError(Exception):
-    """Phony exception used to test that the cleanup in context managers always
-    happens
-    """
-    pass
+from . import StubError
 
 
 def test_real_fh_none():
