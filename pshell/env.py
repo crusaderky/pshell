@@ -17,9 +17,9 @@ def source(bash_file, *, stderr=None):
     exposed to any subprocess invoked afterwards.
 
     .. note::
-        The script is always run with bash. This includes in Windows, where the
-        user needs to make sure bash is installed within %PATH%, and some
-        unixes such as Ubuntu, where /bin/sh is actually dash.
+        The script is always executed with bash. This includes in Windows,
+        where the user needs to make sure bash is installed within %PATH%, and
+        some unixes such as Ubuntu, where /bin/sh is actually dash.
 
         The script is run with errexit, pipefail, nounset.
 
@@ -70,13 +70,23 @@ def putenv(key, value):
 @contextmanager
 def override_env(key, value):
     """Context manager that overrides an environment variable, returns control,
-    and then restores it to its original value
+    and then restores it to its original value.
 
     :param key:
         Variable name
     :param value:
         Variable value. String to set a value, or None to delete the variable.
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
+
+    Example::
+
+        >>> print(os.environ['X'])
+        foo
+        >>> with override_env('X', 'bar'):
+        ...     print(os.environ['X'])
+        bar
+        >>> print(os.environ['X'])
+        foo
     """
     value_backup = os.getenv(key)
     putenv(key, value)
@@ -90,8 +100,9 @@ def override_env(key, value):
 def resolve_env(s):
     """Resolve all environment variables in target string.
 
-    This command always uses the bash syntax ``$VARIABLE`` or ``$(VARIABLE)``.
-    This also applies in Windows.
+    This command always uses the bash syntax ``$VARIABLE`` or ``${VARIABLE}``.
+    This also applies in Windows. Windows native syntax ``%VARIABLE%`` is not
+    supported.
 
     :returns:
         resolved string

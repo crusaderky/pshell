@@ -35,10 +35,12 @@ def remove(path, *, recursive=False, force=True, rename_on_fail=False):
         to delete the file or directory, or in case of NFS locks.
         In this case, rename the file to <path>.DELETEME.<timestamp>.
         If the rename also fails, then raise OSError.
+    :raise FileNotFoundError:
+        If ``force==False`` and path doesn't exist
     :raise OSError:
-        - if force==False and path doesn't exist
-        - if rename_on_fail==False and path can't be deleted
-        - if rename_on_fail==True and path can be neither deleted nor renamed
+        - if ``rename_on_fail==False`` and path can't be deleted
+        - if ``rename_on_fail==True`` and path can be neither deleted nor
+          renamed
     """
     realpath = resolve_env(path)
 
@@ -68,7 +70,7 @@ def remove(path, *, recursive=False, force=True, rename_on_fail=False):
 
 
 def chdir(path):
-    """Move into target path.
+    """Move the present-working directory (pwd) into the target directory.
     """
     if path == '':
         path = '.'
@@ -78,8 +80,8 @@ def chdir(path):
 
 @contextmanager
 def pushd(path):
-    """Context manager that moves into target directory and logs the action.
-    At the end, return to the original directory.
+    """Context manager that moves the pwd into target directory. When leaving
+    the context, the pwd is changed back to what it originally was.
 
     Usage::
 
@@ -110,7 +112,7 @@ def move(src, dst):
     If the destination is a directory or a symlink to a directory, then src is
     moved inside that directory. The destination directory must not already
     exist. If the destination already exists but is not a directory, it may be
-    overwritten depending on os.rename() semantics.
+    overwritten depending on :func:`os.rename` semantics.
     """
     logging.info("Moving %s to %s", src, dst)
     shutil.move(resolve_env(src), resolve_env(dst))
@@ -120,10 +122,7 @@ def copy(src, dst, *, ignore=None):
     """Recursively copy a file or directory. If src is a regular file and dst
     is a directory, a file with the same basename as src is created (or
     overwritten) in the directory specified. Permission bits and last modified
-    dates are copied. Symlinks are preserved.
-
-    .. note::
-       Users and groups are discarded.
+    dates are copied. Symlinks are preserved. Users and groups are discarded.
 
     .. note::
        This function behaves slightly differently from bash when src is a
@@ -143,8 +142,8 @@ def copy(src, dst, *, ignore=None):
          ./foo/hello.txt
 
        This function instead always requires the full destination path; the
-       second invocation of copy('foo', 'bar') will raise FileExistsError
-       because bar already exists.
+       second invocation of ``copy('foo', 'bar')`` will raise
+       :class:`FileExistsError` because ``bar`` already exists.
 
     :param ignore:
         Only effective when copying a directory. See :func:`shutil.copytree`.
@@ -212,25 +211,25 @@ def symlink(src, dst, *, force=False, abspath=False):
         If it's the same symlink, do not replace it in order to prevent race
         conditions.
     :param bool abspath:
-        if False, do the shortest possible relative link. If True, generate a
-        link using absolute paths. This is regardless of wether src and dst are
-        absolute or relative paths, and irregardless of the current working
+        if False, build the shortest possible relative link. If True, generate
+        a link using absolute paths. This is regardless of wether src and dst
+        are absolute or relative paths, and regardless of the current working
         directory (cwd).
 
-    e.g.::
+    Examples::
 
-        symlink('/common/foo', '/common/bar', abspath = False)
+        >>> symlink('/common/foo', '/common/bar')
         /common/foo => bar
 
-        symlink('/common/foo', '/common/bar', abspath = True)
+        >>> symlink('/common/foo', '/common/bar', abspath=True)
         /common/foo => /common/bar
 
-        chdir('/common')
-        symlink('foo', 'bar', abspath = False)
+        >>> chdir('/common')
+        >>> symlink('foo', 'bar')
         /common/foo => bar
 
-        chdir('/common')
-        symlink('foo', 'bar', abspath = True)
+        >>> chdir('/common')
+        >>> symlink('foo', 'bar', abspath=True)
         /common/foo => /common/bar
     """
     _unix_only()
@@ -260,8 +259,8 @@ def symlink(src, dst, *, force=False, abspath=False):
 
 
 def exists(path):
-    """Wrapper around os.path.exists, with automated resolution of environment
-    variables and logging
+    """Wrapper around :func:`os.path.exists`, with automated resolution of
+    environment variables and logging.
     """
     respath = resolve_env(path)
     if os.path.exists(respath):
@@ -272,8 +271,8 @@ def exists(path):
 
 
 def lexists(path):
-    """Wrapper around os.path.lexists, with automated resolution of environment
-    variables and logging
+    """Wrapper around :func:`os.path.lexists`, with automated resolution of
+    environment variables and logging.
     """
     respath = resolve_env(path)
     if os.path.lexists(respath):
@@ -311,7 +310,7 @@ def mkdir(path, *, parents=True, force=True):
 
 
 def owner(fname):
-    """Return the username of the user owning a file
+    """Return the username of the user owning a file.
 
     This function is not available on Windows.
     """

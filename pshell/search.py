@@ -40,15 +40,16 @@ class FileMatchError(Exception):
 
 
 def glob(pathname, *, min_results=0, max_results=None):
-    """Like glob.glob, but in addition it supports environment variables in
-    pathname and it logs the number of results.
+    """Like :func:`glob.glob`, but in addition it supports environment
+    variables in pathname, logs the number of results, and incorporates
+    protection from non-existing paths.
 
     :param str pathname:
         bash-like wildcard expression
     :param int min_results:
         minimum number of expected results
     :param int max_results:
-        maximum number of expected results
+        maximum number of expected results. Omit for no maximum.
     :raises FileMatchError:
         if got less results than min_results or more than max_results
     """
@@ -70,9 +71,10 @@ def glob(pathname, *, min_results=0, max_results=None):
 def iglob(pathname, *, min_results=0, max_results=None):
     """Like glob, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
-    results before FileMatchError is raised.
+    results before :class:`FileMatchError`` is raised.
 
-    Also, in case max_results is exceeded, the iteration will stop immediately.
+    Also, in case ``max_results`` is exceeded, the iteration will stop
+    immediately.
 
     e.g.::
 

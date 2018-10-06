@@ -8,7 +8,7 @@ __all__ = ('concatenate', )
 
 
 def concatenate(output_fname, *input_fnames):
-    """Concatenate files, Python equivalent of
+    """Concatenate files. Python equivalent of
     :command:`cat input_fnames[0] input_fnames[1] ... >> output_fname`.
 
     :param str output_fname:

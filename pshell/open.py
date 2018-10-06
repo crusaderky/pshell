@@ -52,16 +52,16 @@ def _parse_mode(mode, encoding=None, errors=None):
 def open(file, mode='r', *, buffering=-1, encoding=None, errors=None,
          newline=None, closefd=True, opener=None):
     """Open a file handle to target file name or file descriptor.
-    Unlike the builtin function, this wrapper performs automatic environment
-    variable resolution in the file name, and invokes logging.info() to log
-    the file access.
 
-    All parameters as in the builtin open function, with the following
+    Unlike the builtin function, this wrapper performs automatic environment
+    variable resolution in the file name and automatically logs the file
+    access.
+
+    All parameters are as in the builtin open function, with the following
     exceptions:
 
-    - character encoding always defaults to utf-8 instead of being
-      platform-specific
-    - charset decoding errors default to "replace" instead of "strict"
+    - ``encoding`` always defaults to utf-8 instead of being platform-specific
+    - ``errors`` default to ``replace`` instead of ``strict``
     """
     mode_label, encoding, errors = _parse_mode(mode, encoding, errors)
 
@@ -81,19 +81,20 @@ def open(file, mode='r', *, buffering=-1, encoding=None, errors=None,
 def gzip_open(filename, mode='r', *, compresslevel=9, encoding=None,
               errors=None, newline=None):
     """Open a gzip-compressed file in binary or text mode, returning a file
-    object. Unlike gzip.open, this wrapper performs automatic environment
-    variable resolution in the file name, and invokes logging.info() to log the
-    file access.
+    object.
 
-    All parameters are as in gzip.open function, with the following exceptions:
+    Unlike :func:`gzip.open`, this wrapper performs automatic environment
+    variable resolution in the file name and automatically logs file access.
+
+    All parameters are as in :func:`gzip.open`, with the following exceptions:
 
     - the first parameter must be a file name; file handles are not supported
     - this function inspects the filename, and intelligently reverts to
       :func:`open` if the filename does not end with '.gz'.
-    - open mode defaults to 'rt' instead of 'rb'
+    - defaults to text mode instead of binary mode
     - character encoding always defaults to utf-8 instead of being
       platform-specific
-    - charset decoding errors default to "replace" instead of "strict"
+    - charset decoding errors default to ``replace`` instead of ``strict``
     """
     mode_label, encoding, errors = _parse_mode(mode, encoding, errors)
 
