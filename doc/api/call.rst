@@ -1,7 +1,9 @@
 Shell commands
 ==============
 
-.. automodule:: pshell.call
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pshell.call
+.. autofunction:: pshell.check_call
+.. autofunction:: pshell.check_output
+.. autofunction:: pshell.real_fh
+.. autoexception:: pshell.CalledProcessError
+.. autoexception:: pshell.TimeoutExpired

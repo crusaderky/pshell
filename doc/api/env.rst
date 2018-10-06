@@ -1,7 +1,7 @@
 Environment variables
 =====================
 
-.. automodule:: pshell.env
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pshell.source
+.. autofunction:: pshell.putenv
+.. autofunction:: pshell.override_env
+.. autofunction:: pshell.resolve_env

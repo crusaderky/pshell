@@ -1,7 +1,6 @@
 File search and file system traversal
 =====================================
 
-.. automodule:: pshell.search
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pshell.glob
+.. autofunction:: pshell.iglob
+.. autoexception:: pshell.FileMatchError

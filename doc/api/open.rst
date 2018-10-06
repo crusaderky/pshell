@@ -1,7 +1,5 @@
 Open file handles
 =================
 
-.. automodule:: pshell.open
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pshell.open
+.. autofunction:: pshell.gzip_open

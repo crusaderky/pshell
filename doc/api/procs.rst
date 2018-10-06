@@ -1,7 +1,5 @@
 Running processes
 =================
 
-.. automodule:: pshell.procs
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pshell.kill_procs
+.. autofunction:: pshell.find_procs_by_cmdline
