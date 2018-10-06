@@ -268,13 +268,17 @@ def test_exists(tmpdir):
     assert sh.exists('$UNITTEST_BASH/test_exists')
     assert sh.lexists('$UNITTEST_BASH/test_exists')
 
-    sh.symlink('$UNITTEST_BASH/test_exists', '$UNITTEST_BASH/test_exists_ln')
-    assert sh.exists('$UNITTEST_BASH/test_exists_ln')
-    assert sh.lexists('$UNITTEST_BASH/test_exists_ln')
 
-    os.remove('%s/test_exists' % tmpdir)
-    assert not sh.exists('$UNITTEST_BASH/test_exists_ln')
-    assert sh.lexists('$UNITTEST_BASH/test_exists_ln')
+@unix_only
+def test_exists_symlink(tmpdir):
+    os.symlink('%s/a' % tmpdir, '%s/b' % tmpdir)
+    assert not sh.exists('%s/b' % tmpdir)
+    assert sh.lexists('%s/b' % tmpdir)
+
+    with open('%s/a' % tmpdir, 'w'):
+        pass
+    assert sh.exists('%s/b' % tmpdir)
+    assert sh.lexists('%s/b' % tmpdir)
 
 
 def test_mkdir(tmpdir):

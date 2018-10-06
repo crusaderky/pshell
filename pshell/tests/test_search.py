@@ -68,7 +68,7 @@ def test_glob_iglob_recursive(tmpdir):
     expect = []
     tmpdir.mkdir('a').mkdir('b')
     tmpdir.mkdir('c')
-    for d in ('a/b', 'c'):
+    for d in (os.path.join('a', 'b'), 'c'):
         for i in (1, 2, 3):
             fname = os.path.join(str(tmpdir), d, 'test%d.txt' % i)
             expect.append(fname)

@@ -6,7 +6,7 @@ from . import DATADIR
 
 def test_find_kill_procs():
     # Test landg.bash.find_procs_by_cmdline and landg.bash.kill_procs
-    cmd = ['bash', '%s/test_proc.sh' % DATADIR]
+    cmd = ['bash', os.path.join(DATADIR, 'test_proc.sh')]
     os.environ['TEST_DATADIR'] = DATADIR
 
     assert sh.find_procs_by_cmdline('$TEST_DATADIR') == []
