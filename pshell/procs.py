@@ -130,4 +130,9 @@ def find_procs_by_cmdline(*cmdlines):
         except psutil.NoSuchProcess:
             # Process already died
             pass
+        except psutil.AccessDenied:
+            # Windows-specific exception that makes psutil.Process.username
+            # fail for processes belonging to other users
+            pass
+
     return procs

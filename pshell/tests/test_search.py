@@ -8,9 +8,8 @@ def test_glob_iglob(tmpdir):
 
     # Create sample data
     results = [
-        '%s/test1.txt' % tmpdir,
-        '%s/test2.txt' % tmpdir,
-        '%s/test3.txt' % tmpdir,
+        os.path.join(str(tmpdir), 'test%d.txt' % i)
+        for i in (1, 2, 3)
     ]
     for fname in results:
         with open(fname, 'w'):
@@ -71,7 +70,7 @@ def test_glob_iglob_recursive(tmpdir):
     tmpdir.mkdir('c')
     for d in ('a/b', 'c'):
         for i in (1, 2, 3):
-            fname = '%s/%s/test%d.txt' % (tmpdir, d, i)
+            fname = os.path.join(str(tmpdir), d, 'test%d.txt' % i)
             expect.append(fname)
             with open(fname, 'w'):
                 pass

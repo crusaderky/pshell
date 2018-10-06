@@ -11,7 +11,7 @@ def test_find_kill_procs():
 
     assert sh.find_procs_by_cmdline('$TEST_DATADIR') == []
 
-    p = subprocess.Popen(cmd)
+    subprocess.Popen(cmd)
 
     after = sh.find_procs_by_cmdline('$TEST_DATADIR')
     assert len(after) == 1

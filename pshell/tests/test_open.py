@@ -1,13 +1,14 @@
-import glob
 import gzip
 import os
+import psutil
 import pytest
 import pshell as sh
 
 
 def check_fd_was_closed(fname):
-    for symlink in glob.glob('/proc/self/fd/*'):
-        assert not os.path.realpath(symlink).endswith(fname)
+    fname = os.path.basename(fname)
+    for tup in psutil.Process().open_files():
+        assert os.path.basename(tup.path) != fname
 
 
 def test_check_fd_was_closed(tmpdir):

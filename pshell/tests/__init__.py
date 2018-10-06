@@ -1,4 +1,5 @@
-import os.path
+import os
+import pytest
 
 
 DATADIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
@@ -9,3 +10,7 @@ class StubError(Exception):
     happens
     """
     pass
+
+
+unix_only = pytest.mark.skipif(
+    os.name == 'nt', reason='Unix only')

@@ -13,6 +13,13 @@ __all__ = ('remove', 'chdir', 'pushd', 'move', 'copy', 'backup', 'symlink',
            'exists', 'lexists', 'mkdir', 'owner')
 
 
+def _unix_only():
+    """Crash if running on Windows
+    """
+    if os.name == 'nt':
+        raise EnvironmentError("Not supported on Windows")
+
+
 def remove(path, *, recursive=False, force=True, rename_on_fail=False):
     """Remove file or directory
 
@@ -198,6 +205,8 @@ def backup(path, *, suffix=None, force=False, action='copy'):
 def symlink(src, dst, *, force=False, abspath=False):
     """Create a symbolic link pointing to src named dst.
 
+    This exclusively works in Unix, on POSIX-compatible filesystems.
+
     :param bool force:
         if True, remove previous dst if it exists and it's a different symlink.
         If it's the same symlink, do not replace it in order to prevent race
@@ -224,6 +233,8 @@ def symlink(src, dst, *, force=False, abspath=False):
         symlink('foo', 'bar', abspath = True)
         /common/foo => /common/bar
     """
+    _unix_only()
+
     real_src = os.path.abspath(resolve_env(src))
     real_dst = os.path.abspath(resolve_env(dst))
     if force and os.path.islink(real_dst):
@@ -304,6 +315,8 @@ def owner(fname):
 
     This function is not available on Windows.
     """
+    _unix_only()
+
     # Unix-only module
     import pwd
 

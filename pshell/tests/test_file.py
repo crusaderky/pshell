@@ -4,7 +4,7 @@ import os
 import subprocess
 import pytest
 import pshell as sh
-from . import StubError
+from . import StubError, unix_only
 
 
 def test_remove(tmpdir):
@@ -91,7 +91,7 @@ def test_pushd(tmpdir):
         # test that context manager is reentrant
         tmpdir.mkdir('d1')
         with sh.pushd('d1'):
-            assert os.getcwd() == os.path.join(tmpdir, 'd1')
+            assert os.getcwd() == os.path.join(str(tmpdir), 'd1')
         assert os.getcwd() == str(tmpdir)
     assert os.getcwd() == d0
 
@@ -168,11 +168,10 @@ def test_copy_err4(tmpdir):
 
 def test_backup(tmpdir):
     os.environ['UNITTEST_BASH'] = str(tmpdir)
-    with open('%s/test' % tmpdir, 'w'):
-        pass
-
-    fname = os.path.join(tmpdir, 'test')
+    fname = '%s/test' % tmpdir
     fname_env = '$UNITTEST_BASH/test'
+    with open(fname, 'w'):
+        pass
 
     # Auto extension
     new_fname = sh.backup(fname_env, action='copy')
@@ -206,6 +205,7 @@ def test_backup_notexist_force():
     assert sh.backup('notexist.txt', force=True) is None
 
 
+@unix_only
 def test_symlink(tmpdir):
     os.environ['UNITTEST_BASH'] = str(tmpdir)
     os.chdir('/')
@@ -308,6 +308,7 @@ def test_mkdir(tmpdir):
     assert os.path.isdir('%s/middle/test_mkdir' % tmpdir)
 
 
+@unix_only
 def test_owner(tmpdir):
     os.environ['UNITTEST_BASH'] = str(tmpdir)
     with open('%s/test_owner' % tmpdir, 'w'):
