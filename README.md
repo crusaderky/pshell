@@ -1,4 +1,4 @@
-pshell: get rit of all bash scripts
+pshell: get rid of all bash scripts
 ===================================
 Python API to completely replace bash scripting
 

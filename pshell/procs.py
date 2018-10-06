@@ -7,6 +7,9 @@ import psutil
 from .env import resolve_env
 
 
+__all__ = ('kill_procs', 'find_procs_by_cmdline')
+
+
 def kill_procs(procs, *, term_timeout=10):
     """Send SIGTERM to a list of processes. After <term_timeout> seconds,
     send SIGKILL to the surviving processes.

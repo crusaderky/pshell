@@ -1,7 +1,7 @@
 pshell: get rid of all bash scripts
 ===================================
 Bash is widely regarded as a very poor choice to write any script longer than
-a few lines. No auto-testing or auto-documentation support, hostile grammar,
+a few lines. No auto-testing or auto-documentation support, bug-prone grammar,
 and lack of debugging tools beyond ``echo`` make any substantial bash script
 intrinsically fragile and hard to maintain.
 
@@ -10,24 +10,24 @@ that could be performed in bash with a single line can take a disproportionate
 amount of code when written in Python using :mod:`os`, :mod:`shutil`,
 :mod:`subprocess`, etc.
 
-**pshell** tries to address all these problems by providing a unified, robust,
-and compact interface to achieve all the tasks that would normally performed
-through bash scripting.
+**pshell** gets the best of both worlds by providing a unified, robust,
+and compact Python API to perform all the tasks that would be traditionally
+done through bash scripting.
 
 To clarify: pshell is *not* an interactive shell; however nothing stops you
-from using it from your favourite python/ipython/jupyter terminal.
+from using it from your favourite python/ipython/jupyter terminal!
 
-Some of the core features are:
+Some of the core features:
 
 - All actions are logged using the :mod:`logging` module. This is invaluable
-  for forensics. It is strongly recommended to initialise the logging module
-  and set the loglevel to INFO or lower before invoking pshell.
-- All paths can contain bash-style environment variables, which are resolved
-  on the fly. Failure to resolve and environment variable results in an
+  for forensics and debugging. It is strongly recommended to initialise the
+  logging module and set the loglevel to INFO or DEBUG before invoking pshell.
+- All file paths can contain bash-style environment variables, which are
+  resolved on the fly. Failure to resolve and environment variable results in an
   :class:`EnvironmentError` being raised.
-  You're safe from the dreaded ``rm -rf $MISSPELLED/*``.
-- Commands in the core library are tweaked, polished, and occasionally changed
-  with a saner default behaviour.
+  You're safe from the dreaded ``rm -rf $MISSPELLED/*``!
+- functions from the core library are wrapped, hardened, polished, and
+  occasionally changed with a saner default behaviour.
 
 
 Quick start
@@ -54,6 +54,7 @@ Index
    installing
    whats-new
 
+
 API Reference
 -------------
 
@@ -67,10 +68,13 @@ API Reference
    api/procs
    api/search
 
+
 Credits
 -------
 pshell was initially developed internally from 2014 as ``landg.bash`` by
-`Legal & General <landg.com>`_. it was renamed and open-sourced in 2018.
+`Legal & General <http://www.landg.com>`_.
+It was renamed and open-sourced in 2018.
+
 
 License
 -------
