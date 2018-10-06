@@ -44,8 +44,9 @@ def real_fh(fh):
 
     Usage::
 
-      with real_fh(sys.stdout) as real_stdout:
-          check_call(cmd, stdout=real_stdout)
+      buf = io.StringIO()
+      with real_fh(buf) as real_buf:
+          subprocess.check_call(cmd, stdout=real_buf)
     """
     if fh is None:
         yield fh
@@ -106,7 +107,7 @@ def real_fh(fh):
 
 
 def _call_cmd(cmd, obfuscate_pwd, shell):
-    """Common internal method of check_call, call, and check_output
+    """Common internal helper of check_call, call, and check_output
     that pre-processes the command to be executed
     """
     log_cmd = cmd
@@ -115,7 +116,10 @@ def _call_cmd(cmd, obfuscate_pwd, shell):
     if obfuscate_pwd:
         log_cmd = log_cmd.replace(obfuscate_pwd, 'XXXX')
     if shell:
-        cmd = _BASH_INIT + cmd
+        if not isinstance(cmd, str):
+            raise ValueError("cmd must be a string when shell=True")
+        cmd = ['bash', '-c', 'set -o errexit; set -o nounset; set -o pipefail;'
+                             ' ' + cmd]
 
     logging.info("Executing: %s", log_cmd)
     return cmd
@@ -123,17 +127,43 @@ def _call_cmd(cmd, obfuscate_pwd, shell):
 
 def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
          shell=True, timeout=None):
-    """Run a Linux command.
+    """Run another program in a subprocess and wait for it to terminate.
 
-    The command is invoked with the errexit, pipefail, nounset bash switches.
-
+    :param cmd:
+        Command to be executed (str or list). If shell=True, it must be a str.
+    :param stdout:
+        standard output file handle. Omit for sys.stdout.
+        Unlike the same parameter for :func:`subprocess.call`, which must be
+        backed by a OS-level file descriptor, this can be a
+        pseudo-stream like e.g. :class:`io.StringIO`.
+    :param stdin:
+        standard input file handle. Omit for no input.
+    :param stderr:
+        standard error file handle. Omit for sys.stderr.
+        Unlike the same parameter for :func:`subprocess.call`, which must be
+        backed by a OS-level file descriptor, this can be a
+        pseudo-stream like e.g. :class:`io.StringIO`.
     :param str obfuscate_pwd:
-        if not None, search for the target password and replace it with XXXX
+        if set, search for the target password and replace it with XXXX
         before logging it.
     :param bool shell:
-        Invoke inside bash. Note that the default is True, while in
-        subprocess.*call it's False.
-    :param int timeout:
+        Invoke inside bash. This differes from the same parameter of
+        :func:`subprocess.call` in several ways:
+
+        - It is True by default instead of False
+        - It sets some sane settings: errexit, nounset, pipefail
+        - It is always guaranteed to be bash. :func:`subprocess.call` instead
+          uses:
+
+          - On RedHat and other distros, bash
+          - On Ubuntu and other distros, dash (whichm among many other things,
+            does not support set -o pipefail)
+          - On Windows, CMD (completely different syntax!)
+
+        Windows users need to make sure they somehow have the `bash` command in
+        their %PATH%.
+
+    :param float timeout:
         kill command if doesn't return within timeout limit
     :returns:
         command exit code
@@ -142,62 +172,45 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
     """
     cmd = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
-        return subprocess.call(cmd, shell=shell, stdin=stdin, stdout=rstdout,
+        return subprocess.call(cmd, stdin=stdin, stdout=rstdout,
                                stderr=rstderr, timeout=timeout)
 
 
 def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
                obfuscate_pwd=None, shell=True, timeout=None):
-    """Run a Linux command.
+    """Run another program in a subprocess and wait for it to terminate.
 
-    The command is invoked with the errexit, pipefail, nounset bash switches.
+    See :func:`call` for parameters description.
 
-    :param str obfuscate_pwd:
-        Search for the target password and replace it with XXXX
-        before logging it.
-    :param bool shell:
-        Invoke inside bash. Note that the default is True, while in
-        subprocess.*call it's False.
-    :param int timeout:
-        kill command if doesn't return within timeout limit
+    :returns:
+        None
     :raise CalledProcessError:
         if the command returns with non-zero exit status
     """
     cmd = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
-        subprocess.check_call(cmd, shell=shell, stdin=stdin, stdout=rstdout,
+        subprocess.check_call(cmd, stdin=stdin, stdout=rstdout,
                               stderr=rstderr, timeout=timeout)
 
 
 def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
                  shell=True, timeout=None,
-                 decode=True, errors='replace'):
-    """Run a Linux command and return stdout.
+                 decode=True, encoding='utf-8', errors='replace'):
+    """Run another program in a subprocess and wait for it to terminate.
 
-    The command is invoked with the errexit, pipefail, nounset bash switches.
-
-    :param str obfuscate_pwd:
-        Search for the target password and replace it with XXXX
-        before logging it.
-    :param bool shell:
-        Invoke inside bash. Note that the default is True, while in
-        subprocess.*call it's False.
-    :param int timeout:
-        kill command if doesn't return within timeout limit. If the timeout
-        expires, the child process will be killed and then waited for again.
-        The TimeoutExpired exception will be re-raised after the child process
-        has terminated.
-
-        .. note::
-           When using shell=True, the timeout will not work.
+    See :func:`call` for parameters description.
 
     :param bool decode:
         If True, decode the raw output to UTF-8 and return a str object.
         If False, return the raw bytes object.
-        The default is to decode to UTF-8. Note how this differes
-        from :func:`subprocess.check_output`.
+        The default is to decode to UTF-8. Note how this differs
+        from :func:`subprocess.check_output`, which always returns the raw
+        output.
+    :param str encoding:
+        Encoding of the raw bytes output. Ignored if decode=False.
     :param str errors:
-        'replace', 'ignore', or 'strict'. See :meth:`str.decode`
+        'replace', 'ignore', or 'strict'. See :meth:`str.decode`.
+        Ignored if decode=False.
     :returns:
         command stdout
     :rtype:
@@ -208,8 +221,8 @@ def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
     cmd = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stderr) as rstderr:
         raw_output = subprocess.check_output(
-            cmd, shell=shell, stdin=stdin, stderr=rstderr, timeout=timeout)
+            cmd, stdin=stdin, stderr=rstderr, timeout=timeout)
 
     if decode:
-        return raw_output.decode('utf-8', errors=errors)
+        return raw_output.decode(encoding=encoding, errors=errors)
     return raw_output

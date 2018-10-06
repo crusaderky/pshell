@@ -3,32 +3,41 @@
 import logging
 import os
 import string
-import subprocess
 from contextlib import contextmanager
-from .call import _BASH_INIT
+from .call import check_output
 
 
 __all__ = ('source', 'putenv', 'override_env', 'resolve_env')
 
 
 def source(bash_file, *, stderr=None):
-    """Emulate the bash command source <bash_file>.
+    """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
-    The acquired variables are exposed to any subprocess afterwards.
+    The acquired variables are injected into ``os.environment`` and are
+    exposed to any subprocess invoked afterwards.
 
     .. note::
-        The script is run with errexit, pipefail, nounset. This may cause
-        failures when those flags are otherwise not set.
+        The script is always run with bash. This includes in Windows, where the
+        user needs to make sure bash is installed within %PATH%, and some
+        unixes such as Ubuntu, where /bin/sh is actually dash.
 
-    :raise CalledProcessError: if the command returns with non-zero exit status
+        The script is run with errexit, pipefail, nounset.
+
+    :param str bash_file:
+        Path to the bash file. It can contain environment variables.
+    :param stderr:
+        standard error file handle. Omit for sys.stderr.
+        Unlike the same parameter for :func:`subprocess.call`, which must be
+        backed by a OS-level file descriptor, this can be a
+        pseudo-stream like e.g. :class:`io.StringIO`.
+    :raise CalledProcessError:
+        if the command returns with non-zero exit status
     """
     logging.info("Sourcing environment variables from %s", bash_file)
 
-    cmd = _BASH_INIT + "source %s 1>&2 && env" % bash_file
+    stdout = check_output('source "%s" 1>&2 && env' % bash_file, stderr=stderr)
 
-    stdout = subprocess.check_output(cmd, shell=True, stderr=stderr)
-
-    for line in stdout.decode('utf-8').split("\n"):
+    for line in stdout.splitlines():
         (key, _, value) = line.partition("=")
 
         if key not in ('_', '', 'SHLVL') and os.getenv(key) != value:
@@ -36,53 +45,60 @@ def source(bash_file, *, stderr=None):
             os.environ[key] = value
 
 
-def putenv(var, value):
+def putenv(key, value):
     """Set environment variable. The new variable will be visible to the
     current process and all subprocesses originating from it.
 
     Unlike os.putenv(), this method resolves environment variables in the
     value, and it is immediately visible to the current process.
 
-    :param var:
+    :param key:
         Variable name
     :param value:
-        Variable value. String to set a value, or None to delete the variable
+        Variable value. String to set a value, or None to delete the variable.
+        It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
     """
     if value is None:
-        logging.info("Deleting environment variable %s", var)
-        os.environ.pop(var, None)
+        logging.info("Deleting environment variable %s", key)
+        os.environ.pop(key, None)
     else:
-        logging.info("Setting environment variable %s=%s", var, value)
-        # Do NOT use os.putenv() - see python manual
-        os.environ[var] = resolve_env(value)
+        logging.info("Setting environment variable %s=%s", key, value)
+        # Do NOT use os.putenv() - see python documentation
+        os.environ[key] = resolve_env(value)
 
 
 @contextmanager
-def override_env(var, value):
+def override_env(key, value):
     """Context manager that overrides an environment variable, returns control,
     and then restores it to its original value
 
-    :param var:
+    :param key:
         Variable name
     :param value:
-        Variable value. String to set a value, or None to delete the variable
+        Variable value. String to set a value, or None to delete the variable.
+        It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
     """
-    value_backup = os.getenv(var)
-    putenv(var, value)
+    value_backup = os.getenv(key)
+    putenv(key, value)
 
     try:
         yield
     finally:
-        putenv(var, value_backup)
+        putenv(key, value_backup)
 
 
 def resolve_env(s):
     """Resolve all environment variables in target string.
 
-    :returns: resolved string
-    :raise EnvironmentError: in case of missing environment variable
+    This command always uses the bash syntax ``$VARIABLE`` or ``$(VARIABLE)``.
+    This also applies in Windows.
+
+    :returns:
+        resolved string
+    :raise EnvironmentError:
+        in case of missing environment variable
     """
     try:
         return string.Template(s).substitute(os.environ)
     except KeyError as e:
-        raise EnvironmentError("Environment variable %s not found" % str(e))
+        raise EnvironmentError("Environment variable %s not found" % e)

@@ -8,4 +8,9 @@ What's New
 v0.1.0 (YYYY-MM-DD)
 -------------------
 
-Initial release.
+Fork from Legal & General's landg.bash.
+
+- Broken down module and unit tests into smaller bits
+- Replaced nosetests with py.test
+- Added support for Ubuntu and Windows
+- CI tests for Linux (Python 3.5, 3.6, 3.7) and Windows (Python 3.6)
