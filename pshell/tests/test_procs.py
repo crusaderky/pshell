@@ -6,7 +6,12 @@ from . import DATADIR
 
 def test_find_kill_procs():
     # Test landg.bash.find_procs_by_cmdline and landg.bash.kill_procs
-    cmd = ['bash', os.path.join(DATADIR, 'test_proc.sh')]
+    
+    if os.name == 'nt':
+        cmd = [os.path.join(DATADIR, 'test_proc.bat')]
+    else:
+        cmd = ['bash', os.path.join(DATADIR, 'test_proc.sh')]
+
     os.environ['TEST_DATADIR'] = DATADIR
 
     assert sh.find_procs_by_cmdline('$TEST_DATADIR') == []
@@ -15,7 +20,6 @@ def test_find_kill_procs():
 
     after = sh.find_procs_by_cmdline('$TEST_DATADIR')
     assert len(after) == 1
-    assert after[0].cmdline() == cmd
 
     # Test substrings and OR'ed matches
     assert sh.find_procs_by_cmdline('this wont match anything',

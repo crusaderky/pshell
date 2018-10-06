@@ -118,7 +118,8 @@ def find_procs_by_cmdline(*cmdlines):
     procs = []
     for proc in psutil.process_iter():
         try:
-            if proc.username() != getpass.getuser():
+            # Process.username() *always* fails on Windows with AccessDenied
+            if os.name != 'nt' and proc.username() != getpass.getuser():
                 continue
             cmdline = " ".join(proc.cmdline())
 
@@ -131,7 +132,7 @@ def find_procs_by_cmdline(*cmdlines):
             # Process already died
             pass
         except psutil.AccessDenied:
-            # Windows-specific exception that makes psutil.Process.username
+            # Windows-specific exception that makes psutil.Process.cmdline()
             # fail for processes belonging to other users
             pass
 
