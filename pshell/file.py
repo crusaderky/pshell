@@ -5,7 +5,6 @@ import errno
 import logging
 import os
 import shutil
-import pwd
 from contextlib import contextmanager
 from .env import resolve_env
 
@@ -302,7 +301,12 @@ def mkdir(path, *, parents=True, force=True):
 
 def owner(fname):
     """Return the username of the user owning a file
+
+    This function is not available on Windows.
     """
+    # Unix-only module
+    import pwd
+
     fname = resolve_env(fname)
     numeric_uid = os.stat(fname).st_uid
     return pwd.getpwuid(numeric_uid).pw_name

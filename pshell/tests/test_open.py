@@ -202,14 +202,14 @@ def test_gzip_open_unzipped_exclusive_success_nocontext(tmpdir):
 
 
 def test_gzip_open_exclusive_failure(tmpdir):
-    open(f'%s/test_gzip_open.gz' % tmpdir, 'w').close()
+    open('%s/test_gzip_open.gz' % tmpdir, 'w').close()
     with pytest.raises(FileExistsError):
         sh.gzip_open('%s/test_gzip_open.gz' % tmpdir, 'x')
     check_fd_was_closed('test_gzip_open.gz')
 
 
 def test_gzip_open_unzipped_exclusive_failure(tmpdir):
-    open(f'%s/test_gzip_open' % tmpdir, 'w').close()
+    open('%s/test_gzip_open' % tmpdir, 'w').close()
     with pytest.raises(FileExistsError):
         sh.gzip_open('%s/test_gzip_open' % tmpdir, 'x')
     check_fd_was_closed('test_gzip_open')
