@@ -75,6 +75,6 @@ pshell was initially developed internally from 2014 as ``landg.bash`` by
 License
 -------
 
-pshell is available under the open source `LGPL License`__.
+pshell is available under the open source `Apache License`__.
 
-__ https://www.gnu.org/licenses/lgpl-3.0.en.html
+__ http://www.apache.org/licenses/LICENSE-2.0.html
