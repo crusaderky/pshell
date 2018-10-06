@@ -1,7 +1,7 @@
 Open file handles
 =================
 
-.. automodule:: open
+.. automodule:: pshell.open
     :members:
     :undoc-members:
     :show-inheritance:

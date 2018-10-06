@@ -1,13 +1,53 @@
-pshell: API to get rid of all bash scripts
-==========================================
-Facilities for faster bash interaction, aimed to replace
-bash scripts. They are mostly wrapped around functions from
-os, shutil, and subprocess. The main differences are:
+pshell: get rid of all bash scripts
+===================================
+Bash is widely regarded as a very poor choice to write any script longer than
+a few lines. No auto-testing or auto-documentation support, hostile grammar,
+and lack of debugging tools beyond ``echo`` make any substantial bash script
+intrinsically fragile and hard to maintain.
 
-1. All actions are logged using the logging library
-2. All paths can contain environment variables
-3. All child shell commands are run with errexit, pipefail, and nounset
+Python on the other hand is a very robust language; however some operations
+that could be performed in bash with a single line can take a disproportionate
+amount of code when written in Python using :mod:`os`, :mod:`shutil`,
+:mod:`subprocess`, etc.
 
+**pshell** tries to address all these problems by providing a unified, robust,
+and compact interface to achieve all the tasks that would normally performed
+through bash scripting.
+
+To clarify: pshell is *not* an interactive shell; however nothing stops you
+from using it from your favourite python/ipython/jupyter terminal.
+
+Some of the core features are:
+
+- All actions are logged using the :mod:`logging` module. This is invaluable
+  for forensics. It is strongly recommended to initialise the logging module
+  and set the loglevel to INFO or lower before invoking pshell.
+- All paths can contain bash-style environment variables, which are resolved
+  on the fly. Failure to resolve and environment variable results in an
+  :class:`EnvironmentError` being raised.
+  You're safe from the dreaded ``rm -rf $MISSPELLED/*``.
+- Commands in the core library are tweaked, polished, and occasionally changed
+  with a saner default behaviour.
+
+
+Quick start
+-----------
+>>> import logging
+>>> import pshell as sh
+>>> logging.basicConfig(
+...     level=logging.INFO,
+...     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
+>>>
+>>> with sh.open("hello.txt", "w") as fh:
+...     fh.write("Hello world!")
+2018-10-06 22:09:06,161 INFO [open.py:70] Opening 'hello.txt' for write
+>>> sh.mkdir("somedir")
+2018-10-06 22:10:28,969 INFO [file.py:298] Creating directory somedir
+>>> sh.copy("hello.txt", "somedir/")
+2018-10-06 22:10:37,354 INFO [file.py:152] Copying hello.txt to somedir/
+
+Index
+-----
 
 .. toctree::
 
@@ -26,6 +66,11 @@ API Reference
    api/open
    api/procs
    api/search
+
+Credits
+-------
+pshell was initially developed internally from 2014 as ``landg.bash`` by
+`Legal & General <landg.com>`_. it was renamed and open-sourced in 2018.
 
 License
 -------

@@ -1,7 +1,7 @@
 Shell commands
 ==============
 
-.. automodule:: call
+.. automodule:: pshell.call
     :members:
     :undoc-members:
     :show-inheritance:

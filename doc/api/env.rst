@@ -1,7 +1,7 @@
 Environment variables
 =====================
 
-.. automodule:: env
+.. automodule:: pshell.env
     :members:
     :undoc-members:
     :show-inheritance:

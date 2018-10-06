@@ -1,7 +1,7 @@
 Running processes
 =================
 
-.. automodule:: procs
+.. automodule:: pshell.procs
     :members:
     :undoc-members:
     :show-inheritance:

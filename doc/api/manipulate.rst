@@ -1,7 +1,7 @@
 File manipulation
 =================
 
-.. automodule:: manipulate
+.. automodule:: pshell.manipulate
     :members:
     :undoc-members:
     :show-inheritance:

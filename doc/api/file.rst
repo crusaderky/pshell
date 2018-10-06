@@ -1,7 +1,7 @@
 Manage files and directories
 ============================
 
-.. automodule:: file
+.. automodule:: pshell.file
     :members:
     :undoc-members:
     :show-inheritance:

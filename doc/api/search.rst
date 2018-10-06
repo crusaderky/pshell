@@ -1,7 +1,7 @@
 File search and file system traversal
 =====================================
 
-.. automodule:: search
+.. automodule:: pshell.search
     :members:
     :undoc-members:
     :show-inheritance:
