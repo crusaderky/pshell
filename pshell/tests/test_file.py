@@ -1,39 +1,15 @@
 import glob
 import os
 import subprocess
-import tempfile
 import pytest
 import pshell as sh
 from . import StubError
 
-cwd_backup = None
-tmpdir = None
 
-
-def setup():
-    global cwd_backup
-    global tmpdir
-
-    cwd_backup = os.getcwd()
-    tmpdir = tempfile.TemporaryDirectory()
-    os.environ['LANDG_UNITTEST_BASH'] = tmpdir.name
-
-
-def teardown():
-    for root, dirs, files in os.walk(tmpdir.name):
-        for fname in dirs + files:
-            try:
-                os.chmod(os.path.join(root, fname), 0o777)
-            except OSError:
-                pass
-
-    os.chdir(cwd_backup)
-    del os.environ['LANDG_UNITTEST_BASH']
-
-
-def test_remove():
-    testpath = tmpdir.name + '/test_remove'
-    testpath_env = '$LANDG_UNITTEST_BASH/test_remove'
+def test_remove(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    testpath = '%s/test_remove' % tmpdir
+    testpath_env = '$UNITTEST_BASH/test_remove'
 
     # remove file
     with open(testpath, 'w'):
@@ -86,8 +62,8 @@ def test_remove_force2():
     sh.remove('NOTEXIST.txt', force=True)
 
 
-def test_remove_noperm():
-    testpath = tmpdir.name + '/test_remove_noperm'
+def test_remove_noperm(tmpdir):
+    testpath = '%s/test_remove_noperm' % tmpdir
     os.makedirs(testpath + '/foo/bar')
     os.chmod(testpath + '/foo/bar', 0)
     with pytest.raises(PermissionError):
@@ -98,92 +74,104 @@ def test_remove_noperm():
     assert len(glob.glob(testpath + '/foo.DELETEME.*')) == 1
 
 
-def test_chdir():
-    sh.chdir('$LANDG_UNITTEST_BASH')
-    assert os.getcwd() == tmpdir.name
+def test_chdir(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    assert os.getcwd() != str(tmpdir)
+    sh.chdir('$UNITTEST_BASH')
+    assert os.getcwd() == str(tmpdir)
 
 
-def test_pushd():
-    os.chdir('/')
-    assert os.getcwd() == '/'
-    with sh.pushd('$LANDG_UNITTEST_BASH'):
-        assert os.getcwd() == tmpdir.name
-    assert os.getcwd() == '/'
+def test_pushd(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    d0 = os.getcwd()
+    assert d0 != str(tmpdir)
+    with sh.pushd('$UNITTEST_BASH'):
+        assert os.getcwd() == str(tmpdir)
+        # test that context manager is reentrant
+        tmpdir.mkdir('d1')
+        with sh.pushd('d1'):
+            assert os.getcwd() == os.path.join(tmpdir, 'd1')
+        assert os.getcwd() == str(tmpdir)
+    assert os.getcwd() == d0
 
     # Test that the cleanup also happens in case of Exception
     with pytest.raises(StubError):
-        with sh.pushd('$LANDG_UNITTEST_BASH'):
-            assert os.getcwd() == tmpdir.name
+        with sh.pushd('$UNITTEST_BASH'):
+            assert os.getcwd() == str(tmpdir)
             raise StubError()
-    assert os.getcwd() == '/'
+    assert os.getcwd() == d0
 
 
-def test_move():
-    os.mkdir(tmpdir.name + '/test_move1')
-    sh.move('$LANDG_UNITTEST_BASH/test_move1', '$LANDG_UNITTEST_BASH/test_move2')
-    assert not os.path.exists(tmpdir.name + '/test_move1')
-    assert os.path.exists(tmpdir.name + '/test_move2')
+def test_move(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    tmpdir.mkdir('test_move1')
+    sh.move('$UNITTEST_BASH/test_move1', '$UNITTEST_BASH/test_move2')
+    assert not os.path.exists('%s/test_move1' % tmpdir)
+    assert os.path.exists('%s/test_move2' % tmpdir)
 
 
-def test_copy():
+def test_copy(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
     # single file - copy to file
-    with open(tmpdir.name + '/test_cp1', 'w'):
+    with open('%s/test_cp1' % tmpdir, 'w'):
         pass
-    sh.copy('$LANDG_UNITTEST_BASH/test_cp1', '$LANDG_UNITTEST_BASH/test_cp2')
-    assert os.path.exists(tmpdir.name + '/test_cp1')
-    assert os.path.exists(tmpdir.name + '/test_cp2')
+    sh.copy('$UNITTEST_BASH/test_cp1', '$UNITTEST_BASH/test_cp2')
+    assert os.path.exists('%s/test_cp1' % tmpdir)
+    assert os.path.exists('%s/test_cp2' % tmpdir)
 
     # single file - copy to directory
-    os.mkdir(tmpdir.name + '/test_cp3')
-    sh.copy('$LANDG_UNITTEST_BASH/test_cp1', '$LANDG_UNITTEST_BASH/test_cp3')
-    assert os.path.exists(tmpdir.name + '/test_cp1')
-    assert os.path.exists(tmpdir.name + '/test_cp3/test_cp1')
+    tmpdir.mkdir('test_cp3')
+    sh.copy('$UNITTEST_BASH/test_cp1', '$UNITTEST_BASH/test_cp3')
+    assert os.path.exists('%s/test_cp1' % tmpdir)
+    assert os.path.exists('%s/test_cp3/test_cp1' % tmpdir)
 
     # recursive
-    os.mkdir(tmpdir.name + '/test_cp4')
-    os.mkdir(tmpdir.name + '/test_cp4/dir2')
-    sh.copy('$LANDG_UNITTEST_BASH/test_cp4', '$LANDG_UNITTEST_BASH/test_cp5')
-    assert os.path.exists(tmpdir.name + '/test_cp4/dir2')
-    assert os.path.exists(tmpdir.name + '/test_cp5/dir2')
+    tmpdir.mkdir('test_cp4')
+    tmpdir.mkdir('test_cp4/dir2')
+    sh.copy('$UNITTEST_BASH/test_cp4', '$UNITTEST_BASH/test_cp5')
+    assert os.path.exists('%s/test_cp4/dir2' % tmpdir)
+    assert os.path.exists('%s/test_cp5/dir2' % tmpdir)
 
 
 # input does not exist
 def test_copy_err1():
     with pytest.raises(FileNotFoundError):
-        sh.copy('/does/not/exist', '$LANDG_UNITTEST_BASH/')
+        sh.copy('/does/not/exist', '$UNITTEST_BASH/')
 
 
 # single file to non-existing directory
-def test_copy_err2():
-    with open(tmpdir.name + '/test_cp_err2', 'w'):
+def test_copy_err2(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    with open('%s/test_cp_err2' % tmpdir, 'w'):
         pass
     with pytest.raises(FileNotFoundError):
-        sh.copy('$LANDG_UNITTEST_BASH/test_cp_err2',
-                '$LANDG_UNITTEST_BASH/does/not/exist')
+        sh.copy('$UNITTEST_BASH/test_cp_err2', '$UNITTEST_BASH/does/not/exist')
 
 
 # directory to non-existing parent directory automatically creates parents
-def test_copy_dir_to_missing_parent():
-    os.mkdir(tmpdir.name + '/test_cpdir')
-    sh.copy('$LANDG_UNITTEST_BASH/test_cpdir',
-            '$LANDG_UNITTEST_BASH/does/not/exist')
+def test_copy_dir_to_missing_parent(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    tmpdir.mkdir('test_cpdir')
+    sh.copy('$UNITTEST_BASH/test_cpdir', '$UNITTEST_BASH/does/not/exist')
 
 
 # directory to already existing target
-def test_copy_err4():
-    os.mkdir(tmpdir.name + '/test_cp_err4a')
-    os.mkdir(tmpdir.name + '/test_cp_err4b')
+def test_copy_err4(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    tmpdir.mkdir('test_cp_err4a')
+    tmpdir.mkdir('test_cp_err4b')
     with pytest.raises(FileExistsError):
-        sh.copy('$LANDG_UNITTEST_BASH/test_cp_err4a',
-                '$LANDG_UNITTEST_BASH/test_cp_err4b')
+        sh.copy('$UNITTEST_BASH/test_cp_err4a',
+                '$UNITTEST_BASH/test_cp_err4b')
 
 
-def test_backup():
-    with open(tmpdir.name + '/test', 'w'):
+def test_backup(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    with open('%s/test' % tmpdir, 'w'):
         pass
 
-    fname = tmpdir.name + '/test'
-    fname_env = '$LANDG_UNITTEST_BASH/test'
+    fname = os.path.join(tmpdir, 'test')
+    fname_env = '$UNITTEST_BASH/test'
 
     # Auto extension
     new_fname = sh.backup(fname_env, action='copy')
@@ -191,16 +179,16 @@ def test_backup():
     assert os.path.exists(sh.resolve_env(new_fname))
 
     # Manual extension
-    new_fname = sh.backup('$LANDG_UNITTEST_BASH/test',
+    new_fname = sh.backup('$UNITTEST_BASH/test',
                           suffix='bak', action='copy')
-    assert os.path.exists(tmpdir.name + '/test.bak')
-    assert new_fname == '$LANDG_UNITTEST_BASH/test.bak'
+    assert os.path.exists('%s/test.bak' % tmpdir)
+    assert new_fname == '$UNITTEST_BASH/test.bak'
 
     # Collisions in the backup name will generate a unique new name
-    new_fname = sh.backup('$LANDG_UNITTEST_BASH/test',
+    new_fname = sh.backup('$UNITTEST_BASH/test',
                           suffix='bak', action='copy')
-    assert os.path.exists(tmpdir.name + '/test.bak.2')
-    assert new_fname == '$LANDG_UNITTEST_BASH/test.bak.2'
+    assert os.path.exists('%s/test.bak.2' % tmpdir)
+    assert new_fname == '$UNITTEST_BASH/test.bak.2'
 
     # action='move'
     new_fname = sh.backup(fname_env, action='move')
@@ -217,99 +205,103 @@ def test_backup_notexist_force():
     assert sh.backup('notexist.txt', force=True) is None
 
 
-def test_symlink():
+def test_symlink(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
     os.chdir('/')
-    with open(tmpdir.name + '/test_ln1', 'w'):
+    with open('%s/test_ln1' % tmpdir, 'w'):
         pass
-    with open(tmpdir.name + '/test_ln2', 'w'):
+    with open('%s/test_ln2' % tmpdir, 'w'):
         pass
 
     # abspath = False
-    sh.symlink('$LANDG_UNITTEST_BASH/test_ln1',
-               '$LANDG_UNITTEST_BASH/test_ln3', abspath=False)
+    sh.symlink('$UNITTEST_BASH/test_ln1',
+               '$UNITTEST_BASH/test_ln3', abspath=False)
     assert subprocess.check_output(
-        "ls -l " + tmpdir.name + "/test_ln3 | awk '{print $NF}'",
+        "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir,
         shell=True) == b'test_ln1\n'
-    os.remove(tmpdir.name + '/test_ln3')
+    os.remove('%s/test_ln3' % tmpdir)
 
     # abspath = True
-    sh.symlink('$LANDG_UNITTEST_BASH/test_ln1', '$LANDG_UNITTEST_BASH/test_ln3', abspath=True)
+    sh.symlink('$UNITTEST_BASH/test_ln1',
+               '$UNITTEST_BASH/test_ln3', abspath=True)
     assert subprocess.check_output(
-        "ls -l " + tmpdir.name + "/test_ln3 | awk '{print $NF}'",
-        shell=True).decode('utf-8') == tmpdir.name + '/test_ln1\n'
+        "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir,
+        shell=True).decode('utf-8') == '%s/test_ln1\n' % tmpdir
 
     # no force
     with pytest.raises(FileExistsError):
-        sh.symlink('$LANDG_UNITTEST_BASH/test_ln2',
-                   '$LANDG_UNITTEST_BASH/test_ln3', force=False)
+        sh.symlink('$UNITTEST_BASH/test_ln2',
+                   '$UNITTEST_BASH/test_ln3', force=False)
 
     # force must work only to override another symlink,
     # NOT another regular file
     with pytest.raises(FileExistsError):
-        sh.symlink('$LANDG_UNITTEST_BASH/test_ln1',
-                   '$LANDG_UNITTEST_BASH/test_ln2', force=True)
+        sh.symlink('$UNITTEST_BASH/test_ln1',
+                   '$UNITTEST_BASH/test_ln2', force=True)
 
     # force; old symlink is different
-    sh.symlink('$LANDG_UNITTEST_BASH/test_ln2',
-               '$LANDG_UNITTEST_BASH/test_ln3', force=True)
+    sh.symlink('$UNITTEST_BASH/test_ln2',
+               '$UNITTEST_BASH/test_ln3', force=True)
     assert subprocess.check_output(
-        "ls -l " + tmpdir.name + "/test_ln3 | awk '{print $NF}'",
+        "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir,
         shell=True) == b'test_ln2\n'
 
     # force; old symlink is identical
-    sh.symlink('$LANDG_UNITTEST_BASH/test_ln2',
-               '$LANDG_UNITTEST_BASH/test_ln3', force=True)
+    sh.symlink('$UNITTEST_BASH/test_ln2',
+               '$UNITTEST_BASH/test_ln3', force=True)
     assert subprocess.check_output(
-        "ls -l " + tmpdir.name + "/test_ln3 | awk '{print $NF}'",
+        "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir,
         shell=True) == b'test_ln2\n'
 
     # Test that chdir didn't change
     assert os.getcwd() == '/'
 
 
-def test_exists():
-    assert not sh.exists('$LANDG_UNITTEST_BASH/test_exists')
-    assert not sh.lexists('$LANDG_UNITTEST_BASH/test_exists')
+def test_exists(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    assert not sh.exists('$UNITTEST_BASH/test_exists')
+    assert not sh.lexists('$UNITTEST_BASH/test_exists')
 
-    with open(tmpdir.name + '/test_exists', 'w'):
+    with open('%s/test_exists' % tmpdir, 'w'):
         pass
-    assert sh.exists('$LANDG_UNITTEST_BASH/test_exists')
-    assert sh.lexists('$LANDG_UNITTEST_BASH/test_exists')
+    assert sh.exists('$UNITTEST_BASH/test_exists')
+    assert sh.lexists('$UNITTEST_BASH/test_exists')
 
-    sh.symlink('$LANDG_UNITTEST_BASH/test_exists', '$LANDG_UNITTEST_BASH/test_exists_ln')
-    assert sh.exists('$LANDG_UNITTEST_BASH/test_exists_ln')
-    assert sh.lexists('$LANDG_UNITTEST_BASH/test_exists_ln')
+    sh.symlink('$UNITTEST_BASH/test_exists', '$UNITTEST_BASH/test_exists_ln')
+    assert sh.exists('$UNITTEST_BASH/test_exists_ln')
+    assert sh.lexists('$UNITTEST_BASH/test_exists_ln')
 
-    os.remove(tmpdir.name + '/test_exists')
-    assert not sh.exists('$LANDG_UNITTEST_BASH/test_exists_ln')
-    assert sh.lexists('$LANDG_UNITTEST_BASH/test_exists_ln')
+    os.remove('%s/test_exists' % tmpdir)
+    assert not sh.exists('$UNITTEST_BASH/test_exists_ln')
+    assert sh.lexists('$UNITTEST_BASH/test_exists_ln')
 
 
-def test_mkdir():
-    sh.mkdir('$LANDG_UNITTEST_BASH/test_mkdir', force=False, parents=False)
-    assert os.path.isdir(tmpdir.name + '/test_mkdir')
+def test_mkdir(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    sh.mkdir('$UNITTEST_BASH/test_mkdir', force=False, parents=False)
+    assert os.path.isdir('%s/test_mkdir' % tmpdir)
 
     # Already existing
     with pytest.raises(FileExistsError):
-        sh.mkdir('$LANDG_UNITTEST_BASH/test_mkdir', force=False, parents=False)
+        sh.mkdir('$UNITTEST_BASH/test_mkdir', force=False, parents=False)
 
-    sh.mkdir('$LANDG_UNITTEST_BASH/test_mkdir', force=True, parents=False)
+    sh.mkdir('$UNITTEST_BASH/test_mkdir', force=True, parents=False)
 
-    assert os.path.isdir(tmpdir.name + '/test_mkdir')
+    assert os.path.isdir('%s/test_mkdir' % tmpdir)
 
     # Accidentally overwrite a non-directory
-    with open(tmpdir.name + '/test_mkdir_file', 'w'):
+    with open('%s/test_mkdir_file' % tmpdir, 'w'):
         pass
 
     with pytest.raises(FileExistsError):
-        sh.mkdir('$LANDG_UNITTEST_BASH/test_mkdir_file',
+        sh.mkdir('$UNITTEST_BASH/test_mkdir_file',
                  force=True, parents=False)
 
     # Missing middle path
     with pytest.raises(FileNotFoundError):
-        sh.mkdir('$LANDG_UNITTEST_BASH/middle/test_mkdir',
+        sh.mkdir('$UNITTEST_BASH/middle/test_mkdir',
                  parents=False, force=False)
 
-    sh.mkdir('$LANDG_UNITTEST_BASH/middle/test_mkdir',
+    sh.mkdir('$UNITTEST_BASH/middle/test_mkdir',
              parents=True, force=False)
-    assert os.path.isdir(tmpdir.name + '/middle/test_mkdir')
+    assert os.path.isdir('%s/middle/test_mkdir' % tmpdir)
