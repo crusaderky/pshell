@@ -1,7 +1,7 @@
 """Functions for manipulating files
 """
 import logging
-from .open import open as pshell_open
+from .open import pshell_open
 
 
 __all__ = ('concatenate', )

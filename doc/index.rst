@@ -71,7 +71,7 @@ API Reference
 
 Credits
 -------
-pshell was initially developed internally from 2014 as ``landg.bash`` by
+pshell was initially developed internally since 2014 as ``landg.bash`` by
 `Legal & General <http://www.landg.com>`_.
 It was renamed and open-sourced in 2018.
 

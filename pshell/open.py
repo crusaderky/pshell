@@ -1,37 +1,60 @@
 """Functions to open file descriptors
 """
 import logging
-import gzip
+import os.path
 from .env import resolve_env
 
 
-__all__ = ('open', 'gzip_open')
+__all__ = ('pshell_open', )
 
 
-# We're going to override function open - need to preserve the original one.
-_open_builtin = open
+# When importing in __init__, we're going to rename pshell_open to just
+# open
+def pshell_open(file, mode='r', *, encoding=None, errors=None,
+                compression='auto', **kwargs):
+    """Open a file handle to target file name or file descriptor.
 
-
-def _parse_mode(mode, encoding=None, errors=None):
-    """Helper function of :func:`open` and :func:`gzip_open`.
-    Parse file open mode to format logging message, and tweak encoding and
-    errors parameters.
+    Unlike the builtin function, this wrapper performs automatic environment
+    variable resolution in the file name and automatically logs the file
+    access.
 
     :param str mode:
-        file open mode can be one of 'r', 'rb', 'a', 'ab', 'w', 'wb',
-        'x' or 'xb' for binary mode, or 'rt', 'at', 'wt', or 'xt'
+        As in the builtin :func:`open` function. It always defaults to text
+        mode unless 'b' is explicitly specified; unlike in :func:`gzip.open`,
+        :func:`bz2.open`, and :func:`lzma.open` which instead default to binary
+        mode.
     :param str encoding:
-        charset used to decode or encode the file
+        Character encoding when in text mode. Unlike the builtin :func:`open`
+        function, it defaults to utf-8 instead of being platform-specific.
     :param str errors:
-        errors specifies how encoding errors are handled and should not be
-        used in binary mode. Pass 'strict' to raise exception, 'replace',
-        'backslashreplace', to replace characters or 'ignore' to ignore errors
+        As in the builtin :func:`open` function, but it defaults to ``replace``
+        instead of ``strict``.
+    :param compression:
+        One of:
 
-    :returns: mode_label, encoding and errors
+        False
+            No compression (use builtin :func:`open`)
+        'gzip'
+            gzip compression (use :func:`gzip.open`)
+        'bzip2':
+            bzip2 compression (use :func:`bz2.open`)
+        'lzma':
+            lzma compression (use :func:`lzma.open`)
+        'auto':
+            Automatically set compression if the file extension is '.gz',
+            '.bz2', or '.xz'
+    :param kwargs:
+        Passed verbatim to the underlying open function
     """
+    # Build log message and override default mode, encoding and errors
     if 'b' in mode:
         mode_label = 'binary '
     else:
+        # Default to text mode if the user doesn't specify text or binary. This
+        # overrides gzip.open, bz2.open, lzma.open which default to binary.
+        if 't' not in mode:
+            mode += 't'
+
         mode_label = ''
         if encoding is None:
             encoding = 'utf-8'
@@ -46,67 +69,55 @@ def _parse_mode(mode, encoding=None, errors=None):
         mode_label += 'append'
     else:
         mode_label += 'read'
-    return mode_label, encoding, errors
 
+    # Parse compression
+    if compression == 'auto':
+        if isinstance(file, str):
+            _, ext = os.path.splitext(file)
+            ext = ext.lower()
 
-def open(file, mode='r', *, buffering=-1, encoding=None, errors=None,
-         newline=None, closefd=True, opener=None):
-    """Open a file handle to target file name or file descriptor.
+            if ext == '.gz':
+                compression = 'gzip'
+            elif ext == '.bz2':
+                compression = 'bzip2'
+            elif ext == '.xz':
+                compression = 'lzma'
+            else:
+                compression = False
+        else:
+            compression = False
 
-    Unlike the builtin function, this wrapper performs automatic environment
-    variable resolution in the file name and automatically logs the file
-    access.
-
-    All parameters are as in the builtin open function, with the following
-    exceptions:
-
-    - ``encoding`` always defaults to utf-8 instead of being platform-specific
-    - ``errors`` default to ``replace`` instead of ``strict``
-    """
-    mode_label, encoding, errors = _parse_mode(mode, encoding, errors)
-
-    # Don't accidentally pass a file descriptor to resolve_env
-    if isinstance(file, str):
-        logging.info("Opening '%s' for %s", file, mode_label)
-        file = resolve_env(file)
+    if compression:
+        compress_label = ' (%s compression)' % compression
     else:
-        assert isinstance(file, int)
+        compress_label = ''
+
+    # resolve env variables and write log message.
+    if isinstance(file, str):
+        logging.info("Opening '%s' for %s%s", file, mode_label, compress_label)
+        file = resolve_env(file)
+    elif isinstance(file, int):
+        if compression:
+            raise ValueError("compression not supported when opening a "
+                             "file descriptor")
         logging.info("Opening file descriptor %d for %s", file, mode_label)
+    else:
+        logging.info("Opening file handle for %s%s%s",
+                     file, mode_label, compress_label)
 
-    return _open_builtin(file, mode=mode, buffering=buffering,
-                         encoding=encoding, errors=errors, newline=newline,
-                         closefd=closefd, opener=opener)
+    if compression is False:
+        open_func = open
+    elif compression == 'gzip':
+        import gzip
+        open_func = gzip.open
+    elif compression == 'bzip2':
+        import bz2
+        open_func = bz2.open
+    elif compression == 'lzma':
+        import lzma
+        open_func = lzma.open
+    else:
+        raise ValueError("compression must be False, 'auto', 'gzip', 'bzip2', "
+                         "or 'lzma'")
 
-
-def gzip_open(filename, mode='r', *, compresslevel=9, encoding=None,
-              errors=None, newline=None):
-    """Open a gzip-compressed file in binary or text mode, returning a file
-    object.
-
-    Unlike :func:`gzip.open`, this wrapper performs automatic environment
-    variable resolution in the file name and automatically logs file access.
-
-    All parameters are as in :func:`gzip.open`, with the following exceptions:
-
-    - the first parameter must be a file name; file handles are not supported
-    - this function inspects the filename, and intelligently reverts to
-      :func:`open` if the filename does not end with '.gz'.
-    - defaults to text mode instead of binary mode
-    - character encoding always defaults to utf-8 instead of being
-      platform-specific
-    - charset decoding errors default to ``replace`` instead of ``strict``
-    """
-    mode_label, encoding, errors = _parse_mode(mode, encoding, errors)
-
-    assert isinstance(filename, str)
-    if filename.endswith('.gz'):
-        # Default to text mode if the user doesn't specify text or binary
-        if 't' not in mode and 'b' not in mode:
-            mode += 't'
-        logging.info("Opening gzip %s for %s", filename, mode_label)
-        filename = resolve_env(filename)
-        return gzip.open(filename, mode, compresslevel=compresslevel,
-                         encoding=encoding, errors=errors, newline=newline)
-
-    return open(filename, mode, encoding=encoding, errors=errors,
-                newline=newline)
+    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)

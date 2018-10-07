@@ -14,3 +14,8 @@ Fork from Legal & General's landg.bash.
 - Replaced nosetests with py.test
 - Added support for Ubuntu and Windows
 - CI tests for Linux (Python 3.5, 3.6, 3.7) and Windows (Python 3.6)
+
+API changes:
+
+- Merged ``gzip.open`` into :func:`~pyshell.open`.
+  Added support for bzip2 and lzma compression.
