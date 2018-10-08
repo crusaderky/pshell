@@ -17,5 +17,7 @@ Fork from Legal & General's landg.bash.
 
 API changes:
 
-- Merged ``gzip.open`` into :func:`~pyshell.open`.
+- Merged ``gzip.open`` into :func:`~pshell.open`.
   Added support for bzip2 and lzma compression.
+- Changed parameters of :func:`~pshell.concatente`.
+  By default, the output file is deleted if it already exists.

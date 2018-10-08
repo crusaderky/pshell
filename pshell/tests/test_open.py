@@ -73,7 +73,7 @@ def test_open_exclusive_success(tmpdir, openfunc, ext, compression):
     with sh.open(fname, 'x', compression=compression) as fh:
         fh.write("Hello world")
     with openfunc(fname, 'rt') as fh:
-        assert fh.read() == "Hello world" \
+        assert fh.read() == "Hello world"
 
 
 @compression_param

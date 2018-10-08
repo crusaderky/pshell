@@ -1,82 +1,111 @@
+import pytest
 import pshell as sh
 
 
-BLURB = 'helloworld'
-
-
-def test_concatenate1(tmpdir):
+@pytest.mark.parametrize('newline', ['\n', '\r\n'])
+def test_concatenate_t1(tmpdir, newline):
     # Output file already exists and is non-empty. Files end without a newline.
-    filenames = [
-        '%s/%d.txt' % (tmpdir, pos)
-        for pos, _ in enumerate(BLURB)
-    ]
+    # Test compression.
+    out = '%s/out.gz' % tmpdir
+    in1 = '%s/in1' % tmpdir
+    in2 = '%s/in2.bz2' % tmpdir
 
-    for fname, char in zip(filenames, BLURB):
-        with open(fname, 'w') as fh:
-            fh.write(char)
+    with sh.open(out, 'w') as fh:
+        fh.write('1')
+    with sh.open(in1, 'w') as fh:
+        fh.write('2\n3')
+    with sh.open(in2, 'w') as fh:
+        fh.write('4')
 
-    sh.concatenate(*filenames)
+    n = newline.encode('utf-8')
+    sh.concatenate([in1, in2], out, 'a', newline=newline)
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'1' + n + b'2' + n + b'3' + n + b'4' + n
+    # Defaults to mode='w'
+    sh.concatenate([in1, in2], out, newline=newline)
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'2' + n + b'3' + n + b'4' + n
 
-    with open(filenames[0]) as fh:
-        concatenated_file_contents = fh.readlines()
 
-    assert concatenated_file_contents == [char + '\n' for char in BLURB]
-
-
-def test_concatenate2(tmpdir):
+@pytest.mark.parametrize('newline', ['\n', '\r\n'])
+def test_concatenate_t2(tmpdir, newline):
     # Output file already exists and is non-empty. Files end with a newline.
-    filenames = [
-        '%s/%d.txt' % (tmpdir, pos)
-        for pos, _ in enumerate(BLURB)
-    ]
+    out = '%s/out' % tmpdir
+    in1 = '%s/in1' % tmpdir
+    in2 = '%s/in2' % tmpdir
 
-    for fname, char in zip(filenames, BLURB):
-        with open(fname, 'w') as fh:
-            fh.write(char + '\n')
+    with sh.open(out, 'w', newline=newline) as fh:
+        fh.write('1\n')
+    with sh.open(in1, 'w', newline=newline) as fh:
+        fh.write('2\n3\n')
+    with sh.open(in2, 'w', newline=newline) as fh:
+        fh.write('4\n')
 
-    sh.concatenate(*filenames)
+    n = newline.encode('utf-8')
+    sh.concatenate([in1, in2], out, 'a', newline=newline)
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'1' + n + b'2' + n + b'3' + n + b'4' + n
+    sh.concatenate([in1, in2], out, newline=newline)
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'2' + n + b'3' + n + b'4' + n
 
-    with open(filenames[0]) as fh:
-        concatenated_file_contents = fh.readlines()
 
-    assert concatenated_file_contents == [char + '\n' for char in BLURB]
-
-
-def test_concatenate3(tmpdir):
+def test_concatenate_t3(tmpdir):
     # Output file already exists and it is empty
-    filenames = [
-        '%s/%d.txt' % (tmpdir, pos)
-        for pos, _ in enumerate(BLURB)
-    ]
+    out = '%s/out' % tmpdir
+    in1 = '%s/in1' % tmpdir
+    in2 = '%s/in2' % tmpdir
 
-    with open(filenames[0], 'w') as fh:
+    with sh.open(out, 'w') as fh:
         pass
-    for fname, char in zip(filenames[1:], BLURB[1:]):
-        with open(fname, 'w') as fh:
-            fh.write(char)
+    with sh.open(in1, 'w') as fh:
+        fh.write('2\n')
+    with sh.open(in2, 'w') as fh:
+        fh.write('3\n')
 
-    sh.concatenate(*filenames)
+    sh.concatenate([in1, in2], out, 'a')
+    with sh.open(out) as fh:
+        assert fh.read() == '2\n3\n'
+    sh.concatenate([in1, in2], out)
+    with sh.open(out) as fh:
+        assert fh.read() == '2\n3\n'
 
-    with open(filenames[0]) as fh:
-        concatenated_file_contents = fh.readlines()
 
-    assert concatenated_file_contents == [char + '\n' for char in BLURB[1:]]
-
-
-def test_concatenate4(tmpdir):
+def test_concatenate_t4(tmpdir):
     # Output file does not already exist
-    filenames = [
-        '%s/%d.txt' % (tmpdir, pos)
-        for pos, _ in enumerate(BLURB)
-    ]
+    out = '%s/out' % tmpdir
+    in1 = '%s/in1' % tmpdir
+    in2 = '%s/in2' % tmpdir
 
-    for fname, char in zip(filenames[1:], BLURB[1:]):
-        with open(fname, 'w') as fh:
-            fh.write(char)
+    with sh.open(in1, 'w') as fh:
+        fh.write('2')
+    with sh.open(in2, 'w') as fh:
+        fh.write('3')
 
-    sh.concatenate(*filenames)
+    sh.concatenate([in1, in2], out, 'a')
+    with sh.open(out) as fh:
+        assert fh.read() == '2\n3\n'
+    sh.concatenate([in1, in2], out)
+    with sh.open(out) as fh:
+        assert fh.read() == '2\n3\n'
 
-    with open(filenames[0]) as fh:
-        concatenated_file_contents = fh.readlines()
 
-    assert concatenated_file_contents == [char + '\n' for char in BLURB[1:]]
+def test_concatenate_b(tmpdir):
+    # Binary mode
+    out = '%s/out' % tmpdir
+    in1 = '%s/in1' % tmpdir
+    in2 = '%s/in2' % tmpdir
+
+    with sh.open(out, 'wb') as fh:
+        fh.write(b'1')
+    with sh.open(in1, 'wb') as fh:
+        fh.write(b'2')
+    with sh.open(in2, 'wb') as fh:
+        fh.write(b'3')
+
+    sh.concatenate([in1, in2], out, 'ab')
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'123'
+    sh.concatenate([in1, in2], out, 'wb')
+    with sh.open(out, 'rb') as fh:
+        assert fh.read() == b'23'
