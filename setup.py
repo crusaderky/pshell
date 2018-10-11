@@ -5,31 +5,30 @@ import warnings
 from setuptools import find_packages, setup
 
 
-MAJOR = 0
-MINOR = 1
+MAJOR = 1
+MINOR = 0
 MICRO = 0
-ISRELEASED = False
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 QUALIFIER = ''
 
 
 DISTNAME = 'pshell'
-LICENSE = 'LGPL'
+LICENSE = 'Apache'
 AUTHOR = 'Guido Imperiale'
 AUTHOR_EMAIL = 'crusaderky@gmail.com'
 URL = 'https://github.com/crusaderky/pshell'
 CLASSIFIERS = [
-    'Development Status :: 3 - Alpha',
-    'License :: OSI Approved :: GNU Lesser General Public License v3 or later '
-    '(LGPLv3+)',
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
-    'Intended Audience :: Science/Research',
+    'Intended Audience :: Information Technology',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
-    'Topic :: Scientific/Engineering',
+    'Topic :: System :: System Shells',
 ]
 
 INSTALL_REQUIRES = ['psutil >= 3.2']
