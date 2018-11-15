@@ -5,7 +5,7 @@ from . import DATADIR
 
 
 def test_find_kill_procs():
-    # Test landg.bash.find_procs_by_cmdline and landg.bash.kill_procs
+    # Test pshell.find_procs_by_cmdline and pshell.kill_procs
 
     if os.name == 'nt':
         cmd = [os.path.join(DATADIR, 'test_proc.bat')]
