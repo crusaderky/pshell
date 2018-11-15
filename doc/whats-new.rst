@@ -8,6 +8,11 @@ What's New
 v1.1.0 (Unreleased)
 -------------------
 
+- Breaking API change: changed ``kill_procs(procs)`` to ``kill(*procs)``
+- :func:`~pshell.kill` now accepts integer PIDs in addition to
+  :class:`psutil.Process` objects
+- New function :func:`~pshell.killall`
+
 
 .. _whats-new.1.0.0:
 

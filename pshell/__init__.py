@@ -18,5 +18,5 @@ from .file import remove, chdir, pushd, move, copy, backup   # noqa: F401
 from .file import symlink, exists, lexists, mkdir, owner  # noqa: F401
 from .manipulate import concatenate  # noqa: F401
 from .open import pshell_open as open  # noqa: F401
-from .procs import find_procs_by_cmdline, kill_procs  # noqa: F401
+from .procs import find_procs_by_cmdline, kill, killall  # noqa: F401
 from .search import FileMatchError, glob, iglob  # noqa: F401

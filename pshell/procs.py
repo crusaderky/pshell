@@ -7,7 +7,7 @@ import psutil
 from .env import resolve_env
 
 
-__all__ = ('find_procs_by_cmdline', 'kill_procs')
+__all__ = ('find_procs_by_cmdline', 'kill')
 
 
 def find_procs_by_cmdline(*cmdlines):
@@ -76,8 +76,8 @@ def find_procs_by_cmdline(*cmdlines):
     return procs
 
 
-def kill_procs(procs, *, term_timeout=10):
-    """Send SIGTERM to a list of processes. After ``term_timeout`` seconds,
+def kill(*procs, term_timeout=10):
+    """Send SIGTERM to one or more processes. After ``term_timeout`` seconds,
     send SIGKILL to the surviving processes.
 
     This function will return before ``term_timeout`` if all processes close
@@ -88,9 +88,8 @@ def kill_procs(procs, *, term_timeout=10):
     current process and its parents.
 
     :param procs:
-        sequence of :class:`psutil.Process` objects, e.g. as returned by
-        :func:`find_procs_by_cmdline`.
-
+        one or more PIDs (int) or :class:`psutil.Process` objects, e.g. as
+        returned by :func:`find_procs_by_cmdline`.
     :param float term_timeout:
         seconds to wait between SIGTERM and SIGKILL.
         If ``term_timeout==0``, skip SIGTERM and immediately send SIGKILL.
@@ -99,6 +98,17 @@ def kill_procs(procs, *, term_timeout=10):
     new_procs = []
     my_pid = os.getpid()
     for proc in procs:
+        # Convert any int PIDs to psutil.Process
+        if isinstance(proc, int):
+            try:
+                proc = psutil.Process(proc)
+            except psutil.NoSuchProcess:
+                logging.debug("PID %d does not exist", proc)
+                continue
+        elif not isinstance(proc, psutil.Process):
+            raise TypeError("Expected int or psutil.Process; got %s" %
+                            type(proc))
+
         try:
             if proc.pid == my_pid:
                 logging.debug("Not terminating PID %d as it is the current "
@@ -140,3 +150,12 @@ def kill_procs(procs, *, term_timeout=10):
                 pass
 
     logging.info("All processes terminated")
+
+
+def killall(*cmdlines, term_timeout=10):
+    """Find all processes with the target command line(s), send SIGTERM, and
+    then send SIGKILL to the survivors.
+
+    See :func:`find_procs_by_cmdline` and :func:`kill`.
+    """
+    kill(*find_procs_by_cmdline(*cmdlines), term_timeout=term_timeout)
