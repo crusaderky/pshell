@@ -59,8 +59,8 @@ def glob(pathname, *, min_results=0, max_results=None):
         raise ValueError("max_results must be greater or equal to min_results")
 
     results = _glob.glob(resolve_env(pathname), recursive=True)
-    if (len(results) < min_results or
-            (max_results is not None and len(results) > max_results)):
+    if (len(results) < min_results
+            or (max_results is not None and len(results) > max_results)):
         raise FileMatchError.build(pathname, min_results, max_results,
                                    len(results))
 
