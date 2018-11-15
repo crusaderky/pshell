@@ -26,7 +26,7 @@ def remove(path, *, recursive=False, force=True, rename_on_fail=False):
     :param str path:
         Target file or directory
     :param bool recursive:
-        If True, recursively delete tree starting at file
+        If True, recursively delete tree starting at path
     :param bool force:
         If True, don't raise OSError if path doesn't exist
     :param bool rename_on_fail:
@@ -92,7 +92,7 @@ def pushd(path):
 
         pushd mydir
         ...
-        popd mydir
+        popd
     """
     if path == '':
         path = '.'
@@ -170,9 +170,9 @@ def backup(path, *, suffix=None, force=False, action='copy'):
     :param str action:
         copy|move
     :raise FileNotFoundError:
-        if target path does not exist and force = False
+        if path does not exist and force=False
     :returns:
-        output file name, or None if no backup was performed
+        renamed path, or None if no backup was performed
     """
     assert action in ('copy', 'move')
 
@@ -212,8 +212,8 @@ def symlink(src, dst, *, force=False, abspath=False):
         conditions.
     :param bool abspath:
         if False, build the shortest possible relative link. If True, generate
-        a link using absolute paths. This is regardless of wether src and dst
-        are absolute or relative paths, and regardless of the current working
+        a link using absolute paths. This is regardless of src and dst being
+        absolute or relative paths, and regardless of the current working
         directory (cwd).
 
     Examples::
@@ -284,6 +284,9 @@ def lexists(path):
 
 def mkdir(path, *, parents=True, force=True):
     """Create target directory.
+
+    This function is safe for use in concurrent environments, where multiple
+    actors try to simultaneously create the same directory.
 
     :param str path:
         directory to be created

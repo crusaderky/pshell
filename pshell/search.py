@@ -9,7 +9,7 @@ __all__ = ('FileMatchError', 'glob', 'iglob')
 
 
 class FileMatchError(Exception):
-    """glob returned not enough or too many matches
+    """:func:`glob` or :func:`iglob` returned not enough or too many matches
     """
     @classmethod
     def build(cls, pathname, min_results, max_results, got_results,
@@ -51,7 +51,7 @@ def glob(pathname, *, min_results=0, max_results=None):
     :param int max_results:
         maximum number of expected results. Omit for no maximum.
     :raises FileMatchError:
-        if got less results than min_results or more than max_results
+        if found less results than min_results or more than max_results
     """
     if min_results < 0:
         raise ValueError("min_results must be greater than 0")
@@ -69,14 +69,14 @@ def glob(pathname, *, min_results=0, max_results=None):
 
 
 def iglob(pathname, *, min_results=0, max_results=None):
-    """Like glob, but returns an iterator instead.
+    """Like :func:`glob`, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
-    results before :class:`FileMatchError`` is raised.
+    results before :class:`FileMatchError` is raised.
 
-    Also, in case ``max_results`` is exceeded, the iteration will stop
-    immediately.
+    In case ``max_results`` is exceeded, the iteration will stop
+    immediately - which will save time and memory.
 
-    e.g.::
+    Example::
 
         >>> for fname in glob("test*.txt", max_results=2):
         >>>    print(fname)

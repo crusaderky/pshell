@@ -20,14 +20,14 @@ from using it from your favourite python/ipython/jupyter terminal!
 Some of the core features:
 
 - All actions are logged using the :mod:`logging` module. This is invaluable
-  for forensics and debugging. It is strongly recommended to initialise the
+  for auditing and debugging. It is strongly recommended to initialise the
   logging module and set the loglevel to INFO or DEBUG before invoking pshell.
 - All file paths can contain bash-style environment variables, which are
   resolved on the fly. Failure to resolve and environment variable results in an
   :class:`EnvironmentError` being raised.
   You're safe from the dreaded ``rm -rf $MISSPELLED/*``!
-- functions from the core library are wrapped, hardened, polished, and
-  occasionally changed with a saner default behaviour.
+- Functions from the core library are wrapped, hardened, polished, and
+  occasionally changed to have a saner default behaviour.
 
 
 Quick start

@@ -27,7 +27,7 @@ def concatenate(input_fnames, output_fname, mode='w', **kwargs):
         ``compression='auto'`` (the default).
 
     If the output is opened in text mode, the inputs will be too; if any file
-    does not terminate with ``\n``, it will be added. If the output is opened
+    does not terminate with ``\\n``, it will be added. If the output is opened
     in binary mode, the inputs will too; no extra bytes will be added between
     files.
     """

@@ -18,14 +18,14 @@ Set errexit, pipefail, and nounset.
 
 @contextmanager
 def real_fh(fh):
-    """With the :mod:`io` module, Python offers file-like objects which
-    can be used to spoof a file handle. For example, this is extensively
-    used by nosetests to capture stdout/stderr.
+    """The :mod:`io` module offers file-like objects which can be used to spoof
+    a file handle. Among other things, they are extensively used by nosetests
+    and py.test to capture stdout/stderr.
 
     In most cases, this is transparent; however there are exceptions, like
     the :mod:`subprocess` module, which require a file handle with a real
     file descriptor underlying it - that is, an object which defines the
-    fileno() method.
+    ``fileno()`` method.
 
     This context manager transparently detects these cases and automatically
     converts pseudo file handlers from the :mod:`io` module into real
@@ -46,7 +46,13 @@ def real_fh(fh):
 
       buf = io.StringIO()
       with real_fh(buf) as real_buf:
-          subprocess.check_call(cmd, stdout=real_buf)
+          subprocess.check_call(cmd, stderr=real_buf)
+
+    All pshell functions that wrap around :mod:`subprocess` internally use this
+    context manager. You don't need to use it explicitly::
+
+      buf = io.StringIO()
+      pshell.check_call(cmd, stderr=buf)
     """
     if fh is None:
         yield fh
@@ -156,12 +162,12 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
           uses:
 
           - On RedHat and other distros, bash
-          - On Ubuntu and other distros, dash (whichm among many other things,
+          - On Ubuntu and other distros, dash (which, among many other things,
             does not support set -o pipefail)
           - On Windows, CMD (completely different syntax!)
 
-        Windows users need to make sure they somehow have the `bash` command in
-        their %PATH%.
+        Windows users need to make sure they have the `bash` command in their
+        ``%PATH%``.
 
     :param float timeout:
         kill command if doesn't return within timeout limit
@@ -178,14 +184,15 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
 
 def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
                obfuscate_pwd=None, shell=True, timeout=None):
-    """Run another program in a subprocess and wait for it to terminate.
+    """Run another program in a subprocess and wait for it to terminate; raise
+    exception in case of non-zero exit code.
 
-    See :func:`call` for parameters description.
+    See :func:`call` for parameters documentation.
 
     :returns:
         None
     :raise CalledProcessError:
-        if the command returns with non-zero exit status
+        if the command returns a non-zero exit code
     """
     cmd = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
@@ -196,27 +203,29 @@ def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
 def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
                  shell=True, timeout=None,
                  decode=True, encoding='utf-8', errors='replace'):
-    """Run another program in a subprocess and wait for it to terminate.
+    """Run another program in a subprocess and wait for it to terminate; return
+    its stdout. Raise exception in case of non-zero exit code.
 
-    See :func:`call` for parameters description.
+    See :func:`call` for parameters documentation.
 
     :param bool decode:
         If True, decode the raw output to UTF-8 and return a str object.
         If False, return the raw bytes object.
-        The default is to decode to UTF-8. Note how this differs
+        The default is to decode to UTF-8. This differs
         from :func:`subprocess.check_output`, which always returns the raw
         output.
     :param str encoding:
         Encoding of the raw bytes output. Ignored if decode=False.
     :param str errors:
         'replace', 'ignore', or 'strict'. See :meth:`str.decode`.
-        Ignored if decode=False.
+        Ignored if decode=False. Note that the default value is ``replace``,
+        whereas the default in :meth:`bytes.decode` is ``strict``.
     :returns:
         command stdout
     :rtype:
-        str or bytes (see decode parameter)
+        str or bytes (see ``decode`` parameter)
     :raise CalledProcessError:
-        if the command returns with non-zero exit status
+        if the command returns a non-zero exit code
     """
     cmd = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stderr) as rstderr:
