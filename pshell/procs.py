@@ -105,6 +105,10 @@ def kill(*procs, term_timeout=10):
             except psutil.NoSuchProcess:
                 logging.debug("PID %d does not exist", proc)
                 continue
+        elif proc is None:
+            # Silently skip - useful as e.g. psutil.Process.parent() can
+            # return None
+            continue
         elif not isinstance(proc, psutil.Process):
             raise TypeError("Expected int or psutil.Process; got %s" %
                             type(proc))

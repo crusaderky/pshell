@@ -14,8 +14,8 @@ def spawn_test_proc():
         cmd = [os.path.join(DATADIR, 'test_proc.bat')]
     else:
         cmd = ['bash', os.path.join(DATADIR, 'test_proc.sh')]
-
     subprocess.Popen(cmd)
+    time.sleep(.2)
 
 
 def test_find_kill_procs():
@@ -33,8 +33,8 @@ def test_find_kill_procs():
     assert after[0].status() == 'sleeping'
 
     # Test substrings and OR'ed matches
-    assert sh.find_procs_by_cmdline("this won't match anything",
-                                    DATADIR) == after
+    after2 = sh.find_procs_by_cmdline("this won't match anything", DATADIR)
+    assert [p.pid for p in after2] == [p.pid for p in after]
 
     t1 = time.time()
     sh.kill(*after)
@@ -62,11 +62,13 @@ def test_kill2():
     - procs expressed as int PIDs
     - silently skip process not owned by current user
     - silently skip non-existing process
+    - silently skip None
     - silently skip current process and ancestors of current process
     - raise TypeError on unknown parameters
     """
     current = psutil.Process()
-    sh.kill(1, 70000, current, current.parent(), current.parent().parent())
+    sh.kill(1, 70000, None, current, current.parent(),
+            current.parent().parent())
     with pytest.raises(TypeError):
         sh.kill('foo')
 
