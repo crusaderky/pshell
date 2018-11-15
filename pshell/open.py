@@ -14,18 +14,21 @@ def pshell_open(file, mode='r', *, encoding=None, errors=None,
                 compression='auto', **kwargs):
     """Open a file handle to target file name or file descriptor.
 
-    Unlike the builtin function, this wrapper performs automatic environment
-    variable resolution in the file name and automatically logs the file
-    access.
+    Unlike the builtin function, this wrapper:
+
+    - performs automatic environment variable resolution in the file name
+    - logs the file access
+    - supports transparent compression
 
     :param str mode:
         As in the builtin :func:`open` function. It always defaults to text
-        mode unless 'b' is explicitly specified; unlike in :func:`gzip.open`,
-        :func:`bz2.open`, and :func:`lzma.open` which instead default to binary
-        mode.
+        mode unless 'b' is explicitly specified; this is unlike
+        :func:`gzip.open`, :func:`bz2.open`, and :func:`lzma.open` which
+        instead default to binary mode.
     :param str encoding:
         Character encoding when in text mode. Unlike the builtin :func:`open`
-        function, it defaults to utf-8 instead of being platform-specific.
+        function, it always defaults to utf-8 instead of being
+        platform-specific.
     :param str errors:
         As in the builtin :func:`open` function, but it defaults to ``replace``
         instead of ``strict``.
@@ -41,8 +44,8 @@ def pshell_open(file, mode='r', *, encoding=None, errors=None,
         'lzma':
             lzma compression (use :func:`lzma.open`)
         'auto':
-            Automatically set compression if the file extension is '.gz',
-            '.bz2', or '.xz'
+            Automatically set compression if the file extension is ``.gz``,
+            ``.bz2``, or ``.xz`` (case insensitive)
     :param kwargs:
         Passed verbatim to the underlying open function
     """

@@ -17,9 +17,9 @@ def source(bash_file, *, stderr=None):
     exposed to any subprocess invoked afterwards.
 
     .. note::
-        The script is always executed with bash. This includes in Windows,
-        where the user needs to make sure bash is installed within %PATH%, and
-        some unixes such as Ubuntu, where /bin/sh is actually dash.
+        The script is always executed with bash. This includes when running in
+        Windows, where the user needs to make sure bash is installed within
+        %PATH%, and some unixes such as Ubuntu, where /bin/sh is actually dash.
 
         The script is run with errexit, pipefail, nounset.
 
@@ -47,9 +47,9 @@ def source(bash_file, *, stderr=None):
 
 def putenv(key, value):
     """Set environment variable. The new variable will be visible to the
-    current process and all subprocesses originating from it.
+    current process and all subprocesses forked from it.
 
-    Unlike os.putenv(), this method resolves environment variables in the
+    Unlike :func:`os.putenv`, this method resolves environment variables in the
     value, and it is immediately visible to the current process.
 
     :param key:
@@ -70,7 +70,8 @@ def putenv(key, value):
 @contextmanager
 def override_env(key, value):
     """Context manager that overrides an environment variable, returns control,
-    and then restores it to its original value.
+    and then restores it to its original value (or deletes it if it did not
+    exist before).
 
     :param key:
         Variable name
@@ -88,13 +89,13 @@ def override_env(key, value):
         >>> print(os.environ['X'])
         foo
     """
-    value_backup = os.getenv(key)
+    orig = os.getenv(key)
     putenv(key, value)
 
     try:
         yield
     finally:
-        putenv(key, value_backup)
+        putenv(key, orig)
 
 
 def resolve_env(s):
@@ -104,6 +105,11 @@ def resolve_env(s):
     This also applies in Windows. Windows native syntax ``%VARIABLE%`` is not
     supported.
 
+    Unlike in :func:`os.path.expandpath`, undefined variables raise an
+    exception instead of being silently replaced by an empty string.
+
+    :param str s:
+        string potentially containing environment variables
     :returns:
         resolved string
     :raise EnvironmentError:

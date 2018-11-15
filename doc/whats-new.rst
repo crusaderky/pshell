@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.1.0:
 
-v1.1.0 (XXXX-XX-XX)
+v1.1.0 (Unreleased)
 -------------------
 
 
