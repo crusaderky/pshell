@@ -124,11 +124,13 @@ def _call_cmd(cmd, obfuscate_pwd, shell):
     if shell:
         if not isinstance(cmd, str):
             raise ValueError("cmd must be a string when shell=True")
-        cmd = ['bash', '-c', 'set -o errexit; set -o nounset; set -o pipefail;'
-                             ' ' + cmd]
+        if os.name != 'nt':
+            cmd = ['bash', '-c',
+                   'set -o errexit; set -o nounset; set -o pipefail; ' + cmd]
+            shell = False
 
     logging.info("Executing: %s", log_cmd)
-    return cmd
+    return cmd, shell
 
 
 def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
@@ -153,21 +155,16 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
         if set, search for the target password and replace it with XXXX
         before logging it.
     :param bool shell:
-        Invoke inside bash. This differes from the same parameter of
+        Invoke inside the shell. This differes from the same parameter of
         :func:`subprocess.call` in several ways:
 
         - It is True by default instead of False
-        - It sets some sane settings: errexit, nounset, pipefail
-        - It is always guaranteed to be bash. :func:`subprocess.call` instead
-          uses:
-
-          - On RedHat and other distros, bash
-          - On Ubuntu and other distros, dash (which, among many other things,
-            does not support set -o pipefail)
-          - On Windows, CMD (completely different syntax!)
-
-        Windows users need to make sure they have the `bash` command in their
-        ``%PATH%``.
+        - In Linux and MacOSX, it sets some sane settings:
+          errexit, nounset, pipefail
+        - In Linux and MacOSX, it is always guaranteed to be bash.
+          This differs from :func:`subprocess.call`, which on Ubuntu will
+          invoke dash and RedHat will invoke bash.
+          On Windows it is CMD.
 
     :param float timeout:
         kill command if doesn't return within timeout limit
@@ -176,10 +173,10 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
     :rtype:
         int
     """
-    cmd = _call_cmd(cmd, obfuscate_pwd, shell)
+    cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
         return subprocess.call(cmd, stdin=stdin, stdout=rstdout,
-                               stderr=rstderr, timeout=timeout)
+                               stderr=rstderr, timeout=timeout, shell=shell)
 
 
 def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
@@ -194,10 +191,10 @@ def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
     :raise CalledProcessError:
         if the command returns a non-zero exit code
     """
-    cmd = _call_cmd(cmd, obfuscate_pwd, shell)
+    cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
         subprocess.check_call(cmd, stdin=stdin, stdout=rstdout,
-                              stderr=rstderr, timeout=timeout)
+                              stderr=rstderr, timeout=timeout, shell=shell)
 
 
 def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
@@ -227,10 +224,10 @@ def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
     :raise CalledProcessError:
         if the command returns a non-zero exit code
     """
-    cmd = _call_cmd(cmd, obfuscate_pwd, shell)
+    cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stderr) as rstderr:
         raw_output = subprocess.check_output(
-            cmd, stdin=stdin, stderr=rstderr, timeout=timeout)
+            cmd, stdin=stdin, stderr=rstderr, timeout=timeout, shell=shell)
 
     if decode:
         return raw_output.decode(encoding=encoding, errors=errors)

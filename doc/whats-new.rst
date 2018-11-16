@@ -8,6 +8,8 @@ What's New
 v1.1.0 (Unreleased)
 -------------------
 
+- Many bugfixes for Windows. Removed bash dependency in Windows;
+  commands run in cmd by default.
 - Breaking API change: changed ``kill_procs(procs)`` to ``kill(*procs)``
 - :func:`~pshell.kill` now accepts integer PIDs in addition to
   :class:`psutil.Process` objects

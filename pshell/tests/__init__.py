@@ -12,5 +12,5 @@ class StubError(Exception):
     pass
 
 
-unix_only = pytest.mark.skipif(
-    os.name == 'nt', reason='Unix only')
+unix_only = pytest.mark.skipif(os.name == 'nt', reason='Unix only')
+windows_only = pytest.mark.skipif(os.name != 'nt', reason='Windows only')

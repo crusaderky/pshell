@@ -1,9 +1,10 @@
 import os
 import pytest
 import pshell as sh
-from . import StubError, DATADIR
+from . import StubError, DATADIR, unix_only
 
 
+@unix_only
 def test_source():
     if 'UNITTEST_DATA_1' in os.environ:
         del os.environ['UNITTEST_DATA_1']

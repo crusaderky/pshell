@@ -54,8 +54,9 @@ def find_procs_by_cmdline(*cmdlines):
 
     procs = []
     for proc in psutil.process_iter():
+        print("pid=", proc.pid)
         try:
-            # Process.username() *always* fails on Windows with AccessDenied
+            # On Windows, proc.username() ALWAYS fails
             if os.name != 'nt' and proc.username() != getpass.getuser():
                 continue
             cmdline = " ".join(proc.cmdline())
@@ -128,7 +129,8 @@ def kill(*procs, term_timeout=10):
             continue
 
         new_procs.append(proc)
-    procs = new_procs
+
+    procs, new_procs = new_procs, []
 
     if term_timeout != 0 and procs:
         logging.info("Sending SIGTERM to PIDs %s",
@@ -136,12 +138,16 @@ def kill(*procs, term_timeout=10):
         for proc in procs:
             try:
                 proc.terminate()
+                new_procs.append(proc)
             except psutil.NoSuchProcess:
                 # Process already died
                 pass
+            except psutil.AccessDenied:
+                logging.info("Failed to send SIGTERM to PID %d: access denied",
+                             proc.pid)
 
         # Wait up to <term_timeout> seconds for SIGTERM to be received
-        _, procs = psutil.wait_procs(procs, term_timeout)
+        _, procs = psutil.wait_procs(new_procs, term_timeout)
 
     if procs:
         logging.info("Sending SIGKILL to PIDs %s",
@@ -152,6 +158,9 @@ def kill(*procs, term_timeout=10):
             except psutil.NoSuchProcess:
                 # Process already died
                 pass
+            except psutil.AccessDenied:
+                logging.info("Failed to send SIGKILL to PID %d: access denied",
+                             proc.pid)
 
     logging.info("All processes terminated")
 

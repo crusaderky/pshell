@@ -17,9 +17,10 @@ def source(bash_file, *, stderr=None):
     exposed to any subprocess invoked afterwards.
 
     .. note::
+        This function is not available on Windows.
+
         The script is always executed with bash. This includes when running in
-        Windows, where the user needs to make sure bash is installed within
-        %PATH%, and some unixes such as Ubuntu, where /bin/sh is actually dash.
+        Ubuntu and derivatives, where /bin/sh is actually dash.
 
         The script is run with errexit, pipefail, nounset.
 
