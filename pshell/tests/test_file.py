@@ -19,15 +19,11 @@ def test_remove(tmpdir):
     sh.remove(testpath_env)
     assert not os.path.exists(testpath)
 
-    # remove dir and symlink to dir
+    # remove dir
     os.mkdir(testpath)
-    os.symlink(testpath, testpath + ".lnk")
     assert os.path.exists(testpath)
-    assert os.path.exists(testpath + ".lnk")
-    sh.remove(testpath_env + ".lnk")
     sh.remove(testpath_env)
     assert not os.path.exists(testpath)
-    assert not os.path.exists(testpath + ".lnk")
 
     # recursive
     os.mkdir(testpath)
@@ -41,6 +37,23 @@ def test_remove(tmpdir):
     assert os.path.exists(testpath)
     sh.remove(testpath_env, recursive=True)
     assert not os.path.exists(testpath)
+
+
+@unix_only
+def test_remove_symlinks(tmpdir):
+    os.environ['UNITTEST_BASH'] = str(tmpdir)
+    testpath = '%s/test_remove' % tmpdir
+    testpath_env = '$UNITTEST_BASH/test_remove'
+
+    # remove dir and symlink to dir
+    os.mkdir(testpath)
+    os.symlink(testpath, testpath + ".lnk")
+    assert os.path.exists(testpath)
+    assert os.path.exists(testpath + ".lnk")
+    sh.remove(testpath_env + ".lnk")
+    sh.remove(testpath_env)
+    assert not os.path.exists(testpath)
+    assert not os.path.exists(testpath + ".lnk")
 
     # recursive on a symlink to dir must delete the symlink
     os.mkdir(testpath)
