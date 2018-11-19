@@ -88,7 +88,9 @@ def test_remove_noperm(tmpdir):
     assert len(glob.glob(testpath + '/foo.DELETEME.*')) == 1
 
 
-def test_remove_readonly(tmpdir):
+def test_ignore_readonly1(tmpdir):
+    """Test the ignore_readonly=True flag
+    """
     os.makedirs('%s/foo/bar/baz' % tmpdir)
     os.chmod('%s/foo/bar/baz' % tmpdir, 0o500)
     os.chmod('%s/foo/bar' % tmpdir, 0o500)
@@ -98,7 +100,18 @@ def test_remove_readonly(tmpdir):
         sh.remove('%s/foo' % tmpdir, recursive=True)
     assert os.path.exists('%s/foo/bar/baz' % tmpdir)
 
-    sh.remove('%s/foo' % tmpdir, recursive=True, ignore_readonly=True)
+    sh.remove('%s/foo' % tmpdir, force=False, recursive=True,
+              ignore_readonly=True)
+    assert not os.path.exists('%s/foo' % tmpdir)
+
+
+def test_ignore_readonly2(tmpdir):
+    """Test the case where there was no permission issue to begin with,
+    so a double call to shutil.rmtree would raise FileNotFoundError
+    """
+    os.makedirs('%s/foo/bar' % tmpdir)
+    sh.remove('%s/foo' % tmpdir, force=False, recursive=True,
+              ignore_readonly=True)
     assert not os.path.exists('%s/foo' % tmpdir)
 
 
