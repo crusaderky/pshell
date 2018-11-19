@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.1.0:
 
-v1.1.0 (Unreleased)
+v1.1.0 (2018-11-19)
 -------------------
 
 - Many bugfixes for Windows. Removed bash dependency in Windows;
