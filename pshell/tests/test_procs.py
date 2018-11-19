@@ -47,11 +47,14 @@ def test_find_kill_procs():
     test_proc = spawn_test_proc()
 
     after = sh.find_procs_by_cmdline('$TEST_DATADIR')
-    assert after == [test_proc]
+    # Both the bash and cmd variants of the test process spawn short-lived
+    # subprocesses. Testing for an exact match of 1 result causes instability
+    # in the unit tests.
+    assert test_proc in after
 
     # Test substrings and OR'ed matches
     after2 = sh.find_procs_by_cmdline("this won't match anything", DATADIR)
-    assert after2 == after
+    assert test_proc in after2
 
     t1 = time.time()
     sh.kill(test_proc)
@@ -68,9 +71,11 @@ def test_find_kill_procs():
 
 def test_killall():
     spawn_test_proc()
-    assert len(sh.find_procs_by_cmdline(DATADIR)) == 1
+    # Test for 1+ processes.
+    # Don't test for exactly 1 process (see comment above)
+    assert sh.find_procs_by_cmdline(DATADIR)
     sh.killall(DATADIR)
-    assert sh.find_procs_by_cmdline(DATADIR) == []
+    assert not sh.find_procs_by_cmdline(DATADIR)
 
 
 def test_kill2():
