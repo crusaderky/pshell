@@ -54,7 +54,6 @@ def find_procs_by_cmdline(*cmdlines):
 
     procs = []
     for proc in psutil.process_iter():
-        print("pid=", proc.pid)
         try:
             # On Windows, proc.username() ALWAYS fails
             if os.name != 'nt' and proc.username() != getpass.getuser():
