@@ -14,6 +14,7 @@ v1.1.0 (Unreleased)
 - :func:`~pshell.kill` now accepts integer PIDs in addition to
   :class:`psutil.Process` objects
 - New function :func:`~pshell.killall`
+- New ``ignore_readonly`` parameter for :func:`~pshell.remove`
 
 
 .. _whats-new.1.0.0:

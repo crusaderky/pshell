@@ -5,6 +5,7 @@ import errno
 import logging
 import os
 import shutil
+import stat
 from contextlib import contextmanager
 from .env import resolve_env
 
@@ -20,7 +21,8 @@ def _unix_only():
         raise EnvironmentError("Not supported on Windows")
 
 
-def remove(path, *, recursive=False, force=True, rename_on_fail=False):
+def remove(path, *, recursive=False, force=True, ignore_readonly=False,
+           rename_on_fail=False):
     """Remove file or directory
 
     :param str path:
@@ -29,6 +31,8 @@ def remove(path, *, recursive=False, force=True, rename_on_fail=False):
         If True, recursively delete tree starting at path
     :param bool force:
         If True, don't raise OSError if path doesn't exist
+    :param bool ignore_readonly:
+        If True, also delete files and directories with the read-only flag
     :param bool rename_on_fail:
         If True, don't raise OSError if deletion fails.
         This typically happens if the user does not have enough permissions
@@ -49,7 +53,37 @@ def remove(path, *, recursive=False, force=True, rename_on_fail=False):
         if os.path.islink(realpath):
             os.remove(realpath)
         elif recursive and os.path.isdir(realpath):
-            shutil.rmtree(realpath)
+            if ignore_readonly:
+                # Potentially perform a two-pass deletion
+                # On the first round, every time there is a failure deleting
+                # something do chmod u+w on the failed path and continue
+                has_errors = False
+
+                def onerror(function, path, excinfo):
+                    # Do not act only on PermissionError.
+                    # It could also be OSError('Directory not empty').
+                    nonlocal has_errors
+                    has_errors = True
+                    try:
+                        # chmod u+w
+                        mode = os.stat(path).st_mode
+                        os.chmod(path, mode | stat.S_IWUSR)
+                    except OSError:
+                        pass
+                shutil.rmtree(realpath, onerror=onerror)
+
+                # If there were any errors on the first round, perform a second
+                # deletion pass this time with no error control. At this point,
+                # if the only problems were caused by read-only files owned by
+                # the current user they should not crop up anymore. Raise
+                # exception in eny other case (e.g. directory owned by another
+                # user, file not found)
+                if has_errors:
+                    shutil.rmtree(realpath)
+            else:  # not ignore_readonly
+                # Directly perform recursive deletion with no error control.
+                # Raise exception in case of read-only files.
+                shutil.rmtree(realpath)
         elif os.path.isdir(realpath):
             os.rmdir(realpath)
         else:
