@@ -88,6 +88,20 @@ def test_remove_noperm(tmpdir):
     assert len(glob.glob(testpath + '/foo.DELETEME.*')) == 1
 
 
+def test_remove_readonly(tmpdir):
+    os.makedirs('%s/foo/bar/baz' % tmpdir)
+    os.chmod('%s/foo/bar/baz' % tmpdir, 0o500)
+    os.chmod('%s/foo/bar' % tmpdir, 0o500)
+    os.chmod('%s/foo' % tmpdir, 0o500)
+
+    with pytest.raises(PermissionError):
+        sh.remove('%s/foo' % tmpdir, recursive=True)
+    assert os.path.exists('%s/foo/bar/baz' % tmpdir)
+
+    sh.remove('%s/foo' % tmpdir, recursive=True, ignore_readonly=True)
+    assert not os.path.exists('%s/foo' % tmpdir)
+
+
 def test_chdir(tmpdir):
     os.environ['UNITTEST_BASH'] = str(tmpdir)
     assert os.getcwd() != str(tmpdir)
