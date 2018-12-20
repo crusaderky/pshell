@@ -8,6 +8,8 @@ What's New
 v1.2.0 (Unreleased)
 -------------------
 
+- Mandatory flake8 in CI
+
 
 .. _whats-new.1.1.0:
 

@@ -3,9 +3,7 @@ channels:
   - anaconda
 dependencies:
   - python=3.5
-  - flake8
-  - pytest=3.1
+  - coveralls
   - psutil=3.2
-  - pip:
-    - coveralls
-    - pytest-cov
+  - pytest=3.1
+  - pytest-cov
