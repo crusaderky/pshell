@@ -9,7 +9,7 @@ import time
 
 def _handler(signum, _frame):
     """Print the incoming signal, then do nothing."""
-    print(f'Receive signal {signum}')
+    print('Receive signal {signum}'.format(signum=signum))
 
 
 def main():

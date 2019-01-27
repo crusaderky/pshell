@@ -10,7 +10,7 @@ import time
 
 def _handler(signum, _frame):
     """Print the incoming signal, sleep for 5s then gracefully exit."""
-    print(f'Receive signal {signum}')
+    print('Receive signal {signum}'.format(signum=signum))
     time.sleep(5)
     sys.exit(0)
 
