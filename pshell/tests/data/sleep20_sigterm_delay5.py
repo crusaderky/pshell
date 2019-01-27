@@ -22,7 +22,7 @@ def main():
 
     for i in range(1, 20 + 1):
         time.sleep(1)
-        print(f'{pid}: count {i}')
+        print('{pid}: count {i}'.format(pid=pid, i=i))
     sys.exit(0)
 
 
