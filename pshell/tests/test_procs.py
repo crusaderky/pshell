@@ -1,10 +1,13 @@
 import getpass
 import os
 import subprocess
+import sys
 import time
+
 import psutil
-import pshell as sh
 import pytest
+
+import pshell as sh
 from . import DATADIR
 
 
@@ -95,8 +98,57 @@ def test_kill2():
         sh.kill('foo')
 
 
-@pytest.mark.skip('TODO')
-def test_sigkill():
-    """Test terminating processes resilient to SIGTERM
+@pytest.mark.skipif(
+    os.name == 'nt',
+    reason='On Windows, os.kill() and psutil.kill() calls TerminateProcess '
+           'API which does not process signals (such as SIGTERM, SIGKILL '
+           'etc..) as ANSI/POSIX prescribed.  The TerminateProcess API '
+           'unconditionally terminates the target process.')
+def test_sigkill_sigterm_delay5():
+    """Test that kill() will send a SIGTERM to kill the target first.  Process
+    that shuts itself downupon receiving SIGTERM will be able to do so
+    gracefully.
     """
-    pass
+    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_delay5.py')]
+    subprocess.Popen(cmd)
+    time.sleep(1)  # to allow enough time for python to start
+
+    procs = sh.find_procs_by_cmdline(DATADIR)
+    assert len(procs) == 1
+
+    t1 = time.time()
+    sh.kill(procs[0])
+    t2 = time.time()
+    duration_of_kill = t2 - t1
+
+    assert not sh.find_procs_by_cmdline(DATADIR)
+    assert duration_of_kill > 5   # target process SIGTERM handler delay is 5s
+    assert duration_of_kill < 10  # sh.kill() will retry SIGKILL in 10s
+
+
+@pytest.mark.skipif(
+    os.name == 'nt',
+    reason='On Windows, os.kill() and psutil.kill() calls TerminateProcess '
+           'API which does not process signals (such as SIGTERM, SIGKILL '
+           'etc..) as ANSI/POSIX prescribed.  The TerminateProcess API '
+           'unconditionally terminates the target process.')
+def test_sigkill_sigterm_ignore():
+    """Test terminating processes resilient to SIGTERM, which would ignore the
+    initial SIGTERM it receives.  The kill() will attempt to shut the process
+    again later forcefully.
+    """
+    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_ignore.py')]
+    subprocess.Popen(cmd)
+    time.sleep(1)  # to allow enough time for python to start
+
+    procs = sh.find_procs_by_cmdline(DATADIR)
+    assert len(procs) == 1
+
+    t1 = time.time()
+    sh.kill(procs[0])
+    t2 = time.time()
+    duration_of_kill = t2 - t1
+
+    assert not sh.find_procs_by_cmdline(DATADIR)
+    assert duration_of_kill > 10  # sh.kill() will retry SIGKILL in 10s
+    assert duration_of_kill < 20  # target process only runs this long
