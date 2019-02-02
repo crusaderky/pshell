@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 """Simple script that executes for 20s, and gracefully shuts down in 5s once
 SIGTERM is received.
 """
@@ -23,7 +23,6 @@ def main():
     for i in range(1, 20 + 1):
         time.sleep(1)
         print('{pid}: count {i}'.format(pid=pid, i=i))
-    sys.exit(0)
 
 
 if __name__ == '__main__':

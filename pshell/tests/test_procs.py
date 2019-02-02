@@ -1,12 +1,11 @@
 import getpass
 import os
 import subprocess
+import sys
 import time
-
 
 import psutil
 import pytest
-
 
 import pshell as sh
 from . import DATADIR
@@ -110,7 +109,7 @@ def test_sigkill_sigterm_delay5():
     that shuts itself downupon receiving SIGTERM will be able to do so
     gracefully.
     """
-    cmd = ['python', os.path.join(DATADIR, 'sleep20_sigterm_delay5.py')]
+    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_delay5.py')]
     subprocess.Popen(cmd)
     time.sleep(1)  # to allow enough time for python to start
 
@@ -138,7 +137,7 @@ def test_sigkill_sigterm_ignore():
     initial SIGTERM it receives.  The kill() will attempt to shut the process
     again later forcefully.
     """
-    cmd = ['python', os.path.join(DATADIR, 'sleep20_sigterm_ignore.py')]
+    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_ignore.py')]
     subprocess.Popen(cmd)
     time.sleep(1)  # to allow enough time for python to start
 

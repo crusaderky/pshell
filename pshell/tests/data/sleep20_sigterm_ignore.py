@@ -3,7 +3,6 @@
 """
 import os
 import signal
-import sys
 import time
 
 
@@ -20,7 +19,6 @@ def main():
     for i in range(1, 20 + 1):
         time.sleep(1)
         print('{pid}: count {i}'.format(pid=pid, i=i))
-    sys.exit(0)
 
 
 if __name__ == '__main__':
