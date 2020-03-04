@@ -1,5 +1,7 @@
 import getpass
+import multiprocessing
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -32,12 +34,14 @@ def get_other_users_proc():
     for proc in psutil.process_iter():
         try:
             if proc.username() == getpass.getuser():
-                continue
+                continue  # pragma: nocover
             if all(c != current for c in proc.children(recursive=True)):
                 return proc
-        except psutil.AccessDenied:
+        except psutil.AccessDenied:  # pragma: nocover
             continue
-    raise EnvironmentError("All processes belong to the current user")
+    raise EnvironmentError(
+        "All processes belong to the current user"
+    )  # pragma: nocover
 
 
 def test_find_kill_procs():
@@ -141,7 +145,11 @@ def test_sigkill_sigterm_delay5():
     "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
     "unconditionally terminates the target process.",
 )
-def test_sigkill_sigterm_ignore():
+@pytest.mark.parametrize(
+    "kwargs,min_elapsed,max_elapsed",
+    [({}, 10, 12), ({"term_timeout": 3}, 3, 5), ({"term_timeout": 0}, 0, 2)],
+)
+def test_sigkill_sigterm_ignore(kwargs, min_elapsed, max_elapsed):
     """Test terminating processes resilient to SIGTERM, which would ignore the
     initial SIGTERM it receives.  The kill() will attempt to shut the process
     again later forcefully.
@@ -154,10 +162,89 @@ def test_sigkill_sigterm_ignore():
     assert len(procs) == 1
 
     t1 = time.time()
-    sh.kill(procs[0])
+    sh.kill(procs[0], **kwargs)
     t2 = time.time()
-    duration_of_kill = t2 - t1
-
+    elapsed = t2 - t1
     assert not sh.find_procs_by_cmdline(DATADIR)
-    assert duration_of_kill > 10  # sh.kill() will retry SIGKILL in 10s
-    assert duration_of_kill < 20  # target process only runs this long
+    if min_elapsed > 0:
+        assert min_elapsed < elapsed
+    assert elapsed < max_elapsed
+
+
+class ListenProcess(multiprocessing.Process):
+    """"Context manager that starts a subprocess that listens on one or more ports.
+    If sleep is set, it waits <sleep> seconds before listening on each port.
+
+    e.g.::
+
+        with ListenProcess(2000, 2001, sleep=1) as proc:
+            # start; not listening on any ports
+            # sleep 1 second
+            # open port 2000
+            # sleep 1 second
+            # open port 2001
+        # terminate on context exit
+    """
+
+    def __init__(self, *ports: int, sleep: float = 0):
+        self.ports = ports
+        self.sleep = sleep
+        super().__init__()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.terminate()
+        self.join()
+
+    def run(self):  # pragma: nocover
+        sockets = []
+        for port in self.ports:
+            time.sleep(self.sleep)
+            sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sk.bind(("localhost", port))
+            sk.listen(10)
+            sockets.append(sk)
+        while True:
+            time.sleep(1)
+
+
+def test_wait_for_server():
+    # Test with PID; the process is not listening straight away
+    with ListenProcess(9123, sleep=0.1) as proc:
+        port = sh.wait_for_server(proc.pid)
+        assert port == 9123
+
+        # Test with psutil.Process; the process is already listening
+        psproc = psutil.Process(proc.pid)
+        port = sh.wait_for_server(psproc)
+        assert port == 9123
+
+    # Test dead process
+    with pytest.raises(psutil.NoSuchProcess):
+        sh.wait_for_server(psproc)
+
+
+def test_wait_for_server_timeout():
+    with ListenProcess(9123, sleep=0.4) as proc:
+        with pytest.raises(TimeoutError):
+            sh.wait_for_server(proc.pid, timeout=0.05)
+        port = sh.wait_for_server(proc.pid, timeout=1)
+        assert port == 9123
+
+
+def test_wait_for_server_multiport_whitelist():
+    with ListenProcess(9123, 9124, sleep=0.2) as proc:
+        port = sh.wait_for_server(proc.pid)
+        assert port == 9123
+        port = sh.wait_for_server(proc.pid, 9124)
+        assert port == 9124
+
+
+def test_wait_for_server_multiport_blacklist():
+    with ListenProcess(9123, 9124, sleep=0.2) as proc:
+        port = sh.wait_for_server(proc.pid, ignore_ports=[9123])
+        assert port == 9124

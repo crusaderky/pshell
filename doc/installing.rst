@@ -7,7 +7,7 @@ Required dependencies
 ---------------------
 
 - Python 3.6 or later
-- `psutil <https://github.com/giampaolo/psutil>`_ 5.0 or later
+- `psutil <https://github.com/giampaolo/psutil>`_ 5.3 or later
 
 Deployment
 ----------
