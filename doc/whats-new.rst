@@ -46,7 +46,7 @@ API changes:
 
 - Merged ``gzip.open`` into :func:`~pshell.open`.
   Added support for bzip2 and lzma compression.
-- Changed parameters of :func:`~pshell.concatente`.
+- Changed parameters of :func:`~pshell.concatenate`.
   By default, the output file is deleted if it already exists.
 
 

@@ -38,7 +38,7 @@ def real_fh(fh):
           e.g. as returned by :func:`open` or the default value of `sys.stdout`
           or `sys.stderr`.
         - A pseudo file handle such as :class:`io.StringIO`,
-          :class:`io.BytesIO`, or the stub used by :mod:`nosetests` to mock
+          :class:`io.BytesIO`, or the stub used by nosetests to mock
           `sys.stdout` and `sys.stderr`.
         - None (default for most subprocess functions)
 
@@ -214,7 +214,7 @@ def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
     :param str encoding:
         Encoding of the raw bytes output. Ignored if decode=False.
     :param str errors:
-        'replace', 'ignore', or 'strict'. See :meth:`str.decode`.
+        'replace', 'ignore', or 'strict'. See :meth:`bytes.decode`.
         Ignored if decode=False. Note that the default value is ``replace``,
         whereas the default in :meth:`bytes.decode` is ``strict``.
     :returns:

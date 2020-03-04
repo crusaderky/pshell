@@ -106,7 +106,7 @@ def resolve_env(s):
     This also applies in Windows. Windows native syntax ``%VARIABLE%`` is not
     supported.
 
-    Unlike in :func:`os.path.expandpath`, undefined variables raise an
+    Unlike in :func:`os.path.expandvars`, undefined variables raise an
     exception instead of being silently replaced by an empty string.
 
     :param str s:
