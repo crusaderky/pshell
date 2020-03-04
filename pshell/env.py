@@ -4,10 +4,10 @@ import logging
 import os
 import string
 from contextlib import contextmanager
+
 from .call import check_output
 
-
-__all__ = ('source', 'putenv', 'override_env', 'resolve_env')
+__all__ = ("source", "putenv", "override_env", "resolve_env")
 
 
 def source(bash_file, *, stderr=None):
@@ -41,7 +41,7 @@ def source(bash_file, *, stderr=None):
     for line in stdout.splitlines():
         (key, _, value) = line.partition("=")
 
-        if key not in ('_', '', 'SHLVL') and os.getenv(key) != value:
+        if key not in ("_", "", "SHLVL") and os.getenv(key) != value:
             logging.debug("Setting environment variable: %s=%s", key, value)
             os.environ[key] = value
 

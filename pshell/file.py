@@ -7,22 +7,34 @@ import os
 import shutil
 import stat
 from contextlib import contextmanager
+
 from .env import resolve_env
 
-
-__all__ = ('remove', 'chdir', 'pushd', 'move', 'copy', 'backup', 'symlink',
-           'exists', 'lexists', 'mkdir', 'owner')
+__all__ = (
+    "remove",
+    "chdir",
+    "pushd",
+    "move",
+    "copy",
+    "backup",
+    "symlink",
+    "exists",
+    "lexists",
+    "mkdir",
+    "owner",
+)
 
 
 def _unix_only():
     """Crash if running on Windows
     """
-    if os.name == 'nt':
+    if os.name == "nt":
         raise EnvironmentError("Not supported on Windows")
 
 
-def remove(path, *, recursive=False, force=True, ignore_readonly=False,
-           rename_on_fail=False):
+def remove(
+    path, *, recursive=False, force=True, ignore_readonly=False, rename_on_fail=False
+):
     """Remove file or directory
 
     :param str path:
@@ -70,6 +82,7 @@ def remove(path, *, recursive=False, force=True, ignore_readonly=False,
                         os.chmod(path, mode | stat.S_IWUSR)
                     except OSError:
                         pass
+
                 shutil.rmtree(realpath, onerror=onerror)
 
                 # If there were any errors on the first round, perform a second
@@ -98,7 +111,7 @@ def remove(path, *, recursive=False, force=True, ignore_readonly=False,
         elif rename_on_fail and e.errno != errno.ENOENT:
             logging.warning("%s", e)
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-            backup(path, suffix='DELETEME.' + timestamp, action='move')
+            backup(path, suffix="DELETEME." + timestamp, action="move")
         else:
             raise
 
@@ -106,8 +119,8 @@ def remove(path, *, recursive=False, force=True, ignore_readonly=False,
 def chdir(path):
     """Move the present-working directory (pwd) into the target directory.
     """
-    if path == '':
-        path = '.'
+    if path == "":
+        path = "."
     logging.info("chdir %s", path)
     os.chdir(resolve_env(path))
 
@@ -128,8 +141,8 @@ def pushd(path):
         ...
         popd
     """
-    if path == '':
-        path = '.'
+    if path == "":
+        path = "."
 
     cwd = os.getcwd()
     logging.info("pushd %s", path)
@@ -193,7 +206,7 @@ def copy(src, dst, *, ignore=None):
         shutil.copy2(src, dst)
 
 
-def backup(path, *, suffix=None, force=False, action='copy'):
+def backup(path, *, suffix=None, force=False, action="copy"):
     """Recursively copy or move a file of directory from <path> to
     <path>.<suffix>.
 
@@ -208,7 +221,7 @@ def backup(path, *, suffix=None, force=False, action='copy'):
     :returns:
         renamed path, or None if no backup was performed
     """
-    assert action in ('copy', 'move')
+    assert action in ("copy", "move")
 
     if force and not os.path.lexists(resolve_env(path)):
         # Do nothing
@@ -227,7 +240,7 @@ def backup(path, *, suffix=None, force=False, action='copy'):
         path_bak = "%s.%s.%d" % (path, suffix, i)
         i += 1
 
-    if action == 'copy':
+    if action == "copy":
         copy(path, path_bak)
     else:
         move(path, path_bak)

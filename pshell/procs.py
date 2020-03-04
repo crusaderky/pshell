@@ -3,11 +3,12 @@
 import getpass
 import logging
 import os
+
 import psutil
+
 from .env import resolve_env
 
-
-__all__ = ('find_procs_by_cmdline', 'kill')
+__all__ = ("find_procs_by_cmdline", "kill")
 
 
 def find_procs_by_cmdline(*cmdlines):
@@ -49,14 +50,15 @@ def find_procs_by_cmdline(*cmdlines):
     """
     matches = [resolve_env(x) for x in cmdlines]
 
-    logging.debug("Finding processes that match command lines:\n  - %s",
-                  "\n  - ".join(matches))
+    logging.debug(
+        "Finding processes that match command lines:\n  - %s", "\n  - ".join(matches)
+    )
 
     procs = []
     for proc in psutil.process_iter():
         try:
             # On Windows, proc.username() ALWAYS fails
-            if os.name != 'nt' and proc.username() != getpass.getuser():
+            if os.name != "nt" and proc.username() != getpass.getuser():
                 continue
             cmdline = " ".join(proc.cmdline())
 
@@ -110,18 +112,21 @@ def kill(*procs, term_timeout=10):
             # return None
             continue
         elif not isinstance(proc, psutil.Process):
-            raise TypeError("Expected int or psutil.Process; got %s" %
-                            type(proc))
+            raise TypeError("Expected int or psutil.Process; got %s" % type(proc))
 
         try:
             if proc.pid == my_pid:
-                logging.debug("Not terminating PID %d as it is the current "
-                              "process", proc.pid)
+                logging.debug(
+                    "Not terminating PID %d as it is the current " "process", proc.pid
+                )
                 continue
             children = (child.pid for child in proc.children(recursive=True))
             if my_pid in children:
-                logging.debug("Not terminating PID %d as it is a parent of "
-                              "the  current process", proc.pid)
+                logging.debug(
+                    "Not terminating PID %d as it is a parent of "
+                    "the  current process",
+                    proc.pid,
+                )
                 continue
         except psutil.NoSuchProcess:
             logging.debug("PID %d does not exist", proc.pid)
@@ -132,8 +137,9 @@ def kill(*procs, term_timeout=10):
     procs, new_procs = new_procs, []
 
     if term_timeout != 0 and procs:
-        logging.info("Sending SIGTERM to PIDs %s",
-                     ",".join(str(proc.pid) for proc in procs))
+        logging.info(
+            "Sending SIGTERM to PIDs %s", ",".join(str(proc.pid) for proc in procs)
+        )
         for proc in procs:
             try:
                 proc.terminate()
@@ -142,15 +148,17 @@ def kill(*procs, term_timeout=10):
                 # Process already died
                 pass
             except psutil.AccessDenied:
-                logging.info("Failed to send SIGTERM to PID %d: access denied",
-                             proc.pid)
+                logging.info(
+                    "Failed to send SIGTERM to PID %d: access denied", proc.pid
+                )
 
         # Wait up to <term_timeout> seconds for SIGTERM to be received
         _, procs = psutil.wait_procs(new_procs, term_timeout)
 
     if procs:
-        logging.info("Sending SIGKILL to PIDs %s",
-                     ",".join(str(proc.pid) for proc in procs))
+        logging.info(
+            "Sending SIGKILL to PIDs %s", ",".join(str(proc.pid) for proc in procs)
+        )
         for proc in procs:
             try:
                 proc.kill()
@@ -158,8 +166,9 @@ def kill(*procs, term_timeout=10):
                 # Process already died
                 pass
             except psutil.AccessDenied:
-                logging.info("Failed to send SIGKILL to PID %d: access denied",
-                             proc.pid)
+                logging.info(
+                    "Failed to send SIGKILL to PID %d: access denied", proc.pid
+                )
 
     logging.info("All processes terminated")
 

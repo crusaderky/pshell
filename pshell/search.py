@@ -2,18 +2,18 @@
 """
 import glob as _glob
 import logging
+
 from .env import resolve_env
 
-
-__all__ = ('FileMatchError', 'glob', 'iglob')
+__all__ = ("FileMatchError", "glob", "iglob")
 
 
 class FileMatchError(Exception):
     """:func:`glob` or :func:`iglob` returned not enough or too many matches
     """
+
     @classmethod
-    def build(cls, pathname, min_results, max_results, got_results,
-              or_more=False):
+    def build(cls, pathname, min_results, max_results, got_results, or_more=False):
         """Build the message string
 
         .. note::
@@ -26,7 +26,10 @@ class FileMatchError(Exception):
             new FileMatchError object
         """
         msg = "File match '%s' produced %d%s results, expected " % (
-            pathname, got_results, " or more" if or_more else "")
+            pathname,
+            got_results,
+            " or more" if or_more else "",
+        )
         if max_results is None:
             msg += "at least %d" % min_results
         elif max_results == min_results:
@@ -59,10 +62,10 @@ def glob(pathname, *, min_results=0, max_results=None):
         raise ValueError("max_results must be greater or equal to min_results")
 
     results = _glob.glob(resolve_env(pathname), recursive=True)
-    if (len(results) < min_results
-            or (max_results is not None and len(results) > max_results)):
-        raise FileMatchError.build(pathname, min_results, max_results,
-                                   len(results))
+    if len(results) < min_results or (
+        max_results is not None and len(results) > max_results
+    ):
+        raise FileMatchError.build(pathname, min_results, max_results, len(results))
 
     logging.info("File match %s produced %d results", pathname, len(results))
     return results
@@ -99,8 +102,9 @@ def iglob(pathname, *, min_results=0, max_results=None):
     for result in _glob.iglob(resolve_env(pathname), recursive=True):
         count += 1
         if max_results is not None and count > max_results:
-            raise FileMatchError.build(pathname, min_results, max_results,
-                                       count, or_more=True)
+            raise FileMatchError.build(
+                pathname, min_results, max_results, count, or_more=True
+            )
         yield result
 
     if count < min_results:
