@@ -39,8 +39,8 @@ extensions = [
 ]
 
 extlinks = {
-    'issue': ('https://github.com/crusaderky/pshell/issues/%s', 'GH'),
-    'pull': ('https://github.com/crusaderky/pshell/pull/%s', 'PR'),
+    'issue': ('https://github.com/crusaderky/pshell/issues/%s', '#'),
+    'pull': ('https://github.com/crusaderky/pshell/pull/%s', '#'),
 }
 
 autosummary_generate = True

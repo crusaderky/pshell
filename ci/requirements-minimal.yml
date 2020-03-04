@@ -3,6 +3,6 @@ channels:
   - conda-forge
 dependencies:
   - python=3.6
-  - psutil=3.2
+  - psutil=5.0
   - pytest
   - pytest-cov
