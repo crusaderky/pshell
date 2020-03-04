@@ -8,8 +8,9 @@ What's New
 v1.2.0 (Unreleased)
 -------------------
 
-- Mandatory flake8 in CI `Guido Imperiale`_
+- Mandatory flake8, black, isort, and mypy in CI `Guido Imperiale`_
 - Add unitests for kill() around SIGTERM handling (#6) `Jacob Lin`_
+- Use setuptools-scm for versioning `Guido Imperiale`_
 
 
 .. _whats-new.1.1.0:
