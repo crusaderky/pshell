@@ -14,6 +14,7 @@ v1.2.0 (Unreleased)
 - Mandatory flake8, black, isort, and mypy in CI
 - Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
 - Use setuptools-scm for versioning
+- New function :func:`wait_for_server`
 
 
 .. _whats-new.1.1.0:

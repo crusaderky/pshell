@@ -3,7 +3,8 @@
 import getpass
 import logging
 import os
-from typing import List, Union
+import time
+from typing import Collection, List, Union
 
 import psutil
 
@@ -184,3 +185,66 @@ def killall(*cmdlines: str, term_timeout: Union[int, float] = 10) -> None:
     See :func:`find_procs_by_cmdline` and :func:`kill`.
     """
     kill(*find_procs_by_cmdline(*cmdlines), term_timeout=term_timeout)
+
+
+def wait_for_server(
+    proc: Union[int, psutil.Process],
+    port: int = None,
+    *,
+    ignore_ports: Collection[int] = None,
+    timeout: Union[int, float] = None,
+) -> int:
+    """Wait until either the process starts listening on the given port, or
+    it crashes because the port is occupied by something else.
+
+    :param proc:
+        psutil.Process or Process ID to observe
+    :param int port:
+        Port that needs to be opened in listening mode. If omitted, return when any one
+        port is opened.
+    :param ignore_ports:
+        List or set of ports to ignore (only meaningful when port is None).
+    :param int timeout:
+        Number of seconds to wait before giving up; omit for no timeout
+    :returns:
+        Opened port number
+    :raises psutil.NoSuchProcess:
+        If the process dies while waiting
+    :raises TimeoutError:
+        Timeout expired
+
+    Example:
+
+    .. code-block:: python
+
+        import subprocess
+        import pshell
+
+        proc = subprocess.Popen(["redis-server"])
+        port = pshell.wait_for_server(proc.pid)
+        assert port == 6379
+
+    This can also be used to start a server on port 0, which makes it
+    atomically pick up a random free port, and then retrieve said port.
+    """
+    if isinstance(proc, int):
+        proc = psutil.Process(proc)
+    ignore_ports = set(ignore_ports) if ignore_ports else set()
+
+    if timeout is not None:
+        t0 = time.time()
+
+    while True:
+        # proc.connections() will raise Exception if the process dies
+        open_ports = {
+            conn.laddr.port for conn in proc.connections() if conn.status == "LISTEN"
+        }
+        open_ports -= ignore_ports
+        if port is None and open_ports:
+            return open_ports.pop()
+        if port is not None and port in open_ports:
+            return port
+
+        if timeout is not None and time.time() - t0 > timeout:
+            raise TimeoutError("Timeout expired while waiting for port to open")
+        time.sleep(0.01)

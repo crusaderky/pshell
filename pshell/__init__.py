@@ -22,7 +22,7 @@ from .file import (  # noqa: F401
 )
 from .manipulate import concatenate  # noqa: F401
 from .open import pshell_open as open  # noqa: F401
-from .procs import find_procs_by_cmdline, kill, killall  # noqa: F401
+from .procs import find_procs_by_cmdline, kill, killall, wait_for_server  # noqa: F401
 from .search import FileMatchError, glob, iglob  # noqa: F401
 
 try:
