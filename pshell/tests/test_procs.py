@@ -34,12 +34,14 @@ def get_other_users_proc():
     for proc in psutil.process_iter():
         try:
             if proc.username() == getpass.getuser():
-                continue
+                continue  # pragma: nocover
             if all(c != current for c in proc.children(recursive=True)):
                 return proc
-        except psutil.AccessDenied:
+        except psutil.AccessDenied:  # pragma: nocover
             continue
-    raise EnvironmentError("All processes belong to the current user")
+    raise EnvironmentError(
+        "All processes belong to the current user"
+    )  # pragma: nocover
 
 
 def test_find_kill_procs():
@@ -143,7 +145,11 @@ def test_sigkill_sigterm_delay5():
     "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
     "unconditionally terminates the target process.",
 )
-def test_sigkill_sigterm_ignore():
+@pytest.mark.parametrize(
+    "kwargs,min_elapsed,max_elapsed",
+    [({}, 10, 12), ({"term_timeout": 3}, 3, 5), ({"term_timeout": 0}, 0, 2)],
+)
+def test_sigkill_sigterm_ignore(kwargs, min_elapsed, max_elapsed):
     """Test terminating processes resilient to SIGTERM, which would ignore the
     initial SIGTERM it receives.  The kill() will attempt to shut the process
     again later forcefully.
@@ -156,13 +162,13 @@ def test_sigkill_sigterm_ignore():
     assert len(procs) == 1
 
     t1 = time.time()
-    sh.kill(procs[0])
+    sh.kill(procs[0], **kwargs)
     t2 = time.time()
-    duration_of_kill = t2 - t1
-
+    elapsed = t2 - t1
     assert not sh.find_procs_by_cmdline(DATADIR)
-    assert duration_of_kill > 10  # sh.kill() will retry SIGKILL in 10s
-    assert duration_of_kill < 20  # target process only runs this long
+    if min_elapsed > 0:
+        assert min_elapsed < elapsed
+    assert elapsed < max_elapsed
 
 
 class ListenProcess(multiprocessing.Process):
@@ -193,7 +199,7 @@ class ListenProcess(multiprocessing.Process):
         self.terminate()
         self.join()
 
-    def run(self):
+    def run(self):  # pragma: nocover
         sockets = []
         for port in self.ports:
             time.sleep(self.sleep)

@@ -98,7 +98,7 @@ def kill(
         returned by :func:`find_procs_by_cmdline`.
     :param float term_timeout:
         seconds to wait between SIGTERM and SIGKILL.
-        If ``term_timeout==0``, skip SIGTERM and immediately send SIGKILL.
+        If ``term_timeout==0``, immediately send SIGKILL.
     """
     # Strip list from current process and its parents
     psutil_procs: List[psutil.Process] = []
