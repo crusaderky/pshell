@@ -6,7 +6,7 @@ import os
 import subprocess
 import threading
 from contextlib import contextmanager
-from typing import IO, Iterator, List, Optional, Union
+from typing import IO, List, Optional, Tuple, Union
 
 __all__ = ("real_fh", "call", "check_call", "check_output")
 
@@ -17,7 +17,7 @@ Set errexit, pipefail, and nounset.
 
 
 @contextmanager
-def real_fh(fh: Optional[IO]) -> Iterator[Optional[IO]]:
+def real_fh(fh: Optional[IO]):
     """The :mod:`io` module offers file-like objects which can be used to spoof
     a file handle. Among other things, they are extensively used by nosetests
     and py.test to capture stdout/stderr.
@@ -112,7 +112,9 @@ def real_fh(fh: Optional[IO]) -> Iterator[Optional[IO]]:
         real_fh_in.close()
 
 
-def _call_cmd(cmd: Union[str, List[str]], obfuscate_pwd: Optional[str], shell: bool):
+def _call_cmd(
+    cmd: Union[str, List[str]], obfuscate_pwd: Optional[str], shell: bool
+) -> Tuple[Union[str, List[str]], bool]:
     """Common internal helper of check_call, call, and check_output
     that pre-processes the command to be executed
     """
