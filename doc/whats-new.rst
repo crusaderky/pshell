@@ -9,7 +9,7 @@ v1.2.0 (Unreleased)
 -------------------
 
 - Added support for Python 3.8; dropped support for Python 3.5
-- Increased minimum required version of psutil to 5.0
+- Increased minimum required version of psutil to 5.3
 - Type annotations
 - Mandatory flake8, black, isort, and mypy in CI
 - Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
