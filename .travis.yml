@@ -33,7 +33,7 @@ script:
   - if [[ "$CONDA_ENV" == "py38" ]]; then flake8; fi
   # - if [[ "$CONDA_ENV" == "py38" ]]; then black --check -t py36 .; fi
   # - if [[ "$CONDA_ENV" == "py38" ]]; then isort -rc --check .; fi
-  # - if [[ "$CONDA_ENV" == "py38" ]]; then mypy .; fi
+  - if [[ "$CONDA_ENV" == "py38" ]]; then mypy .; fi
   - |
     if [[ "$CONDA_ENV" == "docs" ]]
     then
