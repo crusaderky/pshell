@@ -68,7 +68,7 @@ def find_procs_by_cmdline(*cmdlines: str) -> List[psutil.Process]:
                     logging.debug("Process %d matches: %s", proc.pid, cmdline)
                     procs.append(proc)
                     break
-        except psutil.NoSuchProcess:
+        except (psutil.NoSuchProcess, psutil.ZombieProcess):
             # Process already died
             pass
         except psutil.AccessDenied:
@@ -107,7 +107,7 @@ def kill(
         if isinstance(proc, int):
             try:
                 proc = psutil.Process(proc)
-            except psutil.NoSuchProcess:
+            except (psutil.NoSuchProcess, psutil.ZombieProcess):
                 logging.debug(f"PID {proc} does not exist")
                 continue
         elif proc is None:
@@ -130,7 +130,7 @@ def kill(
                     "the  current process",
                 )
                 continue
-        except psutil.NoSuchProcess:
+        except (psutil.NoSuchProcess, psutil.ZombieProcess):
             logging.debug(f"PID {proc.pid} does not exist")
             continue
 
@@ -152,7 +152,7 @@ def kill(
             try:
                 proc.terminate()
                 kill_procs.append(proc)
-            except psutil.NoSuchProcess:
+            except (psutil.NoSuchProcess, psutil.ZombieProcess):
                 # Process already died
                 pass
             except psutil.AccessDenied:
@@ -168,7 +168,7 @@ def kill(
         for proc in kill_procs:
             try:
                 proc.kill()
-            except psutil.NoSuchProcess:
+            except (psutil.NoSuchProcess, psutil.ZombieProcess):
                 # Process already died
                 pass
             except psutil.AccessDenied:

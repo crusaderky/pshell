@@ -24,10 +24,10 @@ v1.1.0 (2018-11-19)
 - Many bugfixes for Windows. Removed bash dependency in Windows;
   commands run in cmd by default.
 - Breaking API change: changed ``kill_procs(procs)`` to ``kill(*procs)``
-- :func:`~pshell.kill` now accepts integer PIDs in addition to
+- :func:`kill` now accepts integer PIDs in addition to
   :class:`psutil.Process` objects
-- New function :func:`~pshell.killall`
-- New ``ignore_readonly`` parameter for :func:`~pshell.remove`
+- New function :func:`killall`
+- New ``ignore_readonly`` parameter for :func:`remove`
 
 
 .. _whats-new.1.0.0:
@@ -44,9 +44,9 @@ Fork from Legal & General's landg.bash.
 
 API changes:
 
-- Merged ``gzip.open`` into :func:`~pshell.open`.
+- Merged ``gzip_open`` into :func:`open`.
   Added support for bzip2 and lzma compression.
-- Changed parameters of :func:`~pshell.concatenate`.
+- Changed parameters of :func:`concatenate`.
   By default, the output file is deleted if it already exists.
 
 
