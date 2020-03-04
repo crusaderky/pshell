@@ -6,6 +6,8 @@ dependencies:
   - psutil
   - pytest
   - pytest-cov
-  - flake8
+
   - black
+  - flake8
+  - isort
   - mypy

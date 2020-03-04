@@ -2,16 +2,17 @@
 """
 import logging
 import os.path
+
 from .env import resolve_env
 
-
-__all__ = ('pshell_open', )
+__all__ = ("pshell_open",)
 
 
 # When importing in __init__, we're going to rename pshell_open to just
 # open
-def pshell_open(file, mode='r', *, encoding=None, errors=None,
-                compression='auto', **kwargs):
+def pshell_open(
+    file, mode="r", *, encoding=None, errors=None, compression="auto", **kwargs
+):
     """Open a file handle to target file name or file descriptor.
 
     Unlike the builtin function, this wrapper:
@@ -50,50 +51,50 @@ def pshell_open(file, mode='r', *, encoding=None, errors=None,
         Passed verbatim to the underlying open function
     """
     # Build log message and override default mode, encoding and errors
-    if 'b' in mode:
-        mode_label = 'binary '
+    if "b" in mode:
+        mode_label = "binary "
     else:
         # Default to text mode if the user doesn't specify text or binary. This
         # overrides gzip.open, bz2.open, lzma.open which default to binary.
-        if 't' not in mode:
-            mode += 't'
+        if "t" not in mode:
+            mode += "t"
 
-        mode_label = ''
+        mode_label = ""
         if encoding is None:
-            encoding = 'utf-8'
+            encoding = "utf-8"
         if errors is None:
-            errors = 'replace'
+            errors = "replace"
 
-    if 'w' in mode:
-        mode_label += 'write'
-    elif 'x' in mode:
-        mode_label += 'exclusive create'
-    elif 'a' in mode:
-        mode_label += 'append'
+    if "w" in mode:
+        mode_label += "write"
+    elif "x" in mode:
+        mode_label += "exclusive create"
+    elif "a" in mode:
+        mode_label += "append"
     else:
-        mode_label += 'read'
+        mode_label += "read"
 
     # Parse compression
-    if compression == 'auto':
+    if compression == "auto":
         if isinstance(file, str):
             _, ext = os.path.splitext(file)
             ext = ext.lower()
 
-            if ext == '.gz':
-                compression = 'gzip'
-            elif ext == '.bz2':
-                compression = 'bzip2'
-            elif ext == '.xz':
-                compression = 'lzma'
+            if ext == ".gz":
+                compression = "gzip"
+            elif ext == ".bz2":
+                compression = "bzip2"
+            elif ext == ".xz":
+                compression = "lzma"
             else:
                 compression = False
         else:
             compression = False
 
     if compression:
-        compress_label = ' (%s compression)' % compression
+        compress_label = " (%s compression)" % compression
     else:
-        compress_label = ''
+        compress_label = ""
 
     # resolve env variables and write log message.
     if isinstance(file, str):
@@ -101,26 +102,30 @@ def pshell_open(file, mode='r', *, encoding=None, errors=None,
         file = resolve_env(file)
     elif isinstance(file, int):
         if compression:
-            raise ValueError("compression not supported when opening a "
-                             "file descriptor")
+            raise ValueError(
+                "compression not supported when opening a " "file descriptor"
+            )
         logging.info("Opening file descriptor %d for %s", file, mode_label)
     else:
-        logging.info("Opening file handle for %s%s%s",
-                     file, mode_label, compress_label)
+        logging.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
 
     if compression is False:
         open_func = open
-    elif compression == 'gzip':
+    elif compression == "gzip":
         import gzip
+
         open_func = gzip.open
-    elif compression == 'bzip2':
+    elif compression == "bzip2":
         import bz2
+
         open_func = bz2.open
-    elif compression == 'lzma':
+    elif compression == "lzma":
         import lzma
+
         open_func = lzma.open
     else:
-        raise ValueError("compression must be False, 'auto', 'gzip', 'bzip2', "
-                         "or 'lzma'")
+        raise ValueError(
+            "compression must be False, 'auto', 'gzip', 'bzip2', " "or 'lzma'"
+        )
 
     return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)

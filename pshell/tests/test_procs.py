@@ -8,16 +8,17 @@ import psutil
 import pytest
 
 import pshell as sh
+
 from . import DATADIR
 
 
 def spawn_test_proc():
     """Start a long-running process
     """
-    if os.name == 'nt':
-        cmd = [os.path.join(DATADIR, 'sleep20.bat')]
+    if os.name == "nt":
+        cmd = [os.path.join(DATADIR, "sleep20.bat")]
     else:
-        cmd = ['bash', os.path.join(DATADIR, 'sleep20.sh')]
+        cmd = ["bash", os.path.join(DATADIR, "sleep20.sh")]
 
     popen = subprocess.Popen(cmd)
     return psutil.Process(popen.pid)
@@ -42,14 +43,14 @@ def get_other_users_proc():
 def test_find_kill_procs():
     """Test pshell.find_procs_by_cmdline and pshell.kill
     """
-    os.environ['TEST_DATADIR'] = DATADIR
+    os.environ["TEST_DATADIR"] = DATADIR
 
     assert sh.find_procs_by_cmdline("this won't match anything") == []
-    assert sh.find_procs_by_cmdline('$TEST_DATADIR') == []
+    assert sh.find_procs_by_cmdline("$TEST_DATADIR") == []
 
     test_proc = spawn_test_proc()
 
-    after = sh.find_procs_by_cmdline('$TEST_DATADIR')
+    after = sh.find_procs_by_cmdline("$TEST_DATADIR")
     # Both the bash and cmd variants of the test process spawn short-lived
     # subprocesses. Testing for an exact match of 1 result causes instability
     # in the unit tests.
@@ -69,7 +70,7 @@ def test_find_kill_procs():
     with pytest.raises(psutil.NoSuchProcess):
         test_proc.status()
 
-    assert sh.find_procs_by_cmdline('$TEST_DATADIR') == []
+    assert sh.find_procs_by_cmdline("$TEST_DATADIR") == []
 
 
 def test_killall():
@@ -92,24 +93,31 @@ def test_kill2():
     - raise TypeError on unknown parameters
     """
     current = psutil.Process()
-    sh.kill(70000, None, current, current.parent(),
-            current.parent().parent(), get_other_users_proc())
+    sh.kill(
+        70000,
+        None,
+        current,
+        current.parent(),
+        current.parent().parent(),
+        get_other_users_proc(),
+    )
     with pytest.raises(TypeError):
-        sh.kill('foo')
+        sh.kill("foo")
 
 
 @pytest.mark.skipif(
-    os.name == 'nt',
-    reason='On Windows, os.kill() and psutil.kill() calls TerminateProcess '
-           'API which does not process signals (such as SIGTERM, SIGKILL '
-           'etc..) as ANSI/POSIX prescribed.  The TerminateProcess API '
-           'unconditionally terminates the target process.')
+    os.name == "nt",
+    reason="On Windows, os.kill() and psutil.kill() calls TerminateProcess "
+    "API which does not process signals (such as SIGTERM, SIGKILL "
+    "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
+    "unconditionally terminates the target process.",
+)
 def test_sigkill_sigterm_delay5():
     """Test that kill() will send a SIGTERM to kill the target first.  Process
     that shuts itself downupon receiving SIGTERM will be able to do so
     gracefully.
     """
-    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_delay5.py')]
+    cmd = [sys.executable, os.path.join(DATADIR, "sleep20_sigterm_delay5.py")]
     subprocess.Popen(cmd)
     time.sleep(1)  # to allow enough time for python to start
 
@@ -122,22 +130,23 @@ def test_sigkill_sigterm_delay5():
     duration_of_kill = t2 - t1
 
     assert not sh.find_procs_by_cmdline(DATADIR)
-    assert duration_of_kill > 5   # target process SIGTERM handler delay is 5s
+    assert duration_of_kill > 5  # target process SIGTERM handler delay is 5s
     assert duration_of_kill < 10  # sh.kill() will retry SIGKILL in 10s
 
 
 @pytest.mark.skipif(
-    os.name == 'nt',
-    reason='On Windows, os.kill() and psutil.kill() calls TerminateProcess '
-           'API which does not process signals (such as SIGTERM, SIGKILL '
-           'etc..) as ANSI/POSIX prescribed.  The TerminateProcess API '
-           'unconditionally terminates the target process.')
+    os.name == "nt",
+    reason="On Windows, os.kill() and psutil.kill() calls TerminateProcess "
+    "API which does not process signals (such as SIGTERM, SIGKILL "
+    "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
+    "unconditionally terminates the target process.",
+)
 def test_sigkill_sigterm_ignore():
     """Test terminating processes resilient to SIGTERM, which would ignore the
     initial SIGTERM it receives.  The kill() will attempt to shut the process
     again later forcefully.
     """
-    cmd = [sys.executable, os.path.join(DATADIR, 'sleep20_sigterm_ignore.py')]
+    cmd = [sys.executable, os.path.join(DATADIR, "sleep20_sigterm_ignore.py")]
     subprocess.Popen(cmd)
     time.sleep(1)  # to allow enough time for python to start
 

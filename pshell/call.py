@@ -3,12 +3,11 @@
 import io
 import logging
 import os
-import threading
 import subprocess
+import threading
 from contextlib import contextmanager
 
-
-__all__ = ('real_fh', 'call', 'check_call', 'check_output')
+__all__ = ("real_fh", "call", "check_call", "check_output")
 
 _BASH_INIT = "set -o errexit -o pipefail -o nounset && "
 """Sane initialization string for new bash instances.
@@ -71,19 +70,19 @@ def real_fh(fh):
 
     # Detect if it's a text or binary file handle
     try:
-        fh.write('')
-        bin_flag = ''
+        fh.write("")
+        bin_flag = ""
     except TypeError:
-        fh.write(b'')
-        bin_flag = 'b'
+        fh.write(b"")
+        bin_flag = "b"
 
     # 1. Create a pipe
     # 2. pass its write end to the context
     # 3. read from its read end
     # 4. dump contents into the pseudo file handle
     fd_in, fd_out = os.pipe()
-    real_fh_in = open(fd_in, 'r' + bin_flag, closefd=True)
-    real_fh_out = open(fd_out, 'w' + bin_flag, closefd=True)
+    real_fh_in = open(fd_in, "r" + bin_flag, closefd=True)
+    real_fh_out = open(fd_out, "w" + bin_flag, closefd=True)
 
     # The size of a pipe is 64 kbytes on Linux.
     # If you try writing more than that without reading from the other
@@ -120,21 +119,32 @@ def _call_cmd(cmd, obfuscate_pwd, shell):
     if not isinstance(log_cmd, str):
         log_cmd = '"' + '" "'.join(log_cmd) + '"'
     if obfuscate_pwd:
-        log_cmd = log_cmd.replace(obfuscate_pwd, 'XXXX')
+        log_cmd = log_cmd.replace(obfuscate_pwd, "XXXX")
     if shell:
         if not isinstance(cmd, str):
             raise ValueError("cmd must be a string when shell=True")
-        if os.name != 'nt':
-            cmd = ['bash', '-c',
-                   'set -o errexit; set -o nounset; set -o pipefail; ' + cmd]
+        if os.name != "nt":
+            cmd = [
+                "bash",
+                "-c",
+                "set -o errexit; set -o nounset; set -o pipefail; " + cmd,
+            ]
             shell = False
 
     logging.info("Executing: %s", log_cmd)
     return cmd, shell
 
 
-def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
-         shell=True, timeout=None):
+def call(
+    cmd,
+    *,
+    stdout=None,
+    stdin=None,
+    stderr=None,
+    obfuscate_pwd=None,
+    shell=True,
+    timeout=None,
+):
     """Run another program in a subprocess and wait for it to terminate.
 
     :param cmd:
@@ -175,12 +185,26 @@ def call(cmd, *, stdout=None, stdin=None, stderr=None, obfuscate_pwd=None,
     """
     cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
-        return subprocess.call(cmd, stdin=stdin, stdout=rstdout,
-                               stderr=rstderr, timeout=timeout, shell=shell)
+        return subprocess.call(
+            cmd,
+            stdin=stdin,
+            stdout=rstdout,
+            stderr=rstderr,
+            timeout=timeout,
+            shell=shell,
+        )
 
 
-def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
-               obfuscate_pwd=None, shell=True, timeout=None):
+def check_call(
+    cmd,
+    *,
+    stdin=None,
+    stdout=None,
+    stderr=None,
+    obfuscate_pwd=None,
+    shell=True,
+    timeout=None,
+):
     """Run another program in a subprocess and wait for it to terminate; raise
     exception in case of non-zero exit code.
 
@@ -193,13 +217,28 @@ def check_call(cmd, *, stdin=None, stdout=None, stderr=None,
     """
     cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stdout) as rstdout, real_fh(stderr) as rstderr:
-        subprocess.check_call(cmd, stdin=stdin, stdout=rstdout,
-                              stderr=rstderr, timeout=timeout, shell=shell)
+        subprocess.check_call(
+            cmd,
+            stdin=stdin,
+            stdout=rstdout,
+            stderr=rstderr,
+            timeout=timeout,
+            shell=shell,
+        )
 
 
-def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
-                 shell=True, timeout=None,
-                 decode=True, encoding='utf-8', errors='replace'):
+def check_output(
+    cmd,
+    *,
+    stdin=None,
+    stderr=None,
+    obfuscate_pwd=None,
+    shell=True,
+    timeout=None,
+    decode=True,
+    encoding="utf-8",
+    errors="replace",
+):
     """Run another program in a subprocess and wait for it to terminate; return
     its stdout. Raise exception in case of non-zero exit code.
 
@@ -227,7 +266,8 @@ def check_output(cmd, *, stdin=None, stderr=None, obfuscate_pwd=None,
     cmd, shell = _call_cmd(cmd, obfuscate_pwd, shell)
     with real_fh(stderr) as rstderr:
         raw_output = subprocess.check_output(
-            cmd, stdin=stdin, stderr=rstderr, timeout=timeout, shell=shell)
+            cmd, stdin=stdin, stderr=rstderr, timeout=timeout, shell=shell
+        )
 
     if decode:
         return raw_output.decode(encoding=encoding, errors=errors)
