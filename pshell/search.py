@@ -2,6 +2,7 @@
 """
 import glob as _glob
 import logging
+from typing import Iterator, List
 
 from .env import resolve_env
 
@@ -42,7 +43,7 @@ class FileMatchError(Exception):
         return cls(msg)
 
 
-def glob(pathname, *, min_results=0, max_results=None):
+def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> List[str]:
     """Like :func:`glob.glob`, but in addition it supports environment
     variables in pathname, logs the number of results, and incorporates
     protection from non-existing paths.
@@ -71,7 +72,9 @@ def glob(pathname, *, min_results=0, max_results=None):
     return results
 
 
-def iglob(pathname, *, min_results=0, max_results=None):
+def iglob(
+    pathname: str, *, min_results: int = 0, max_results: int = None
+) -> Iterator[str]:
     """Like :func:`glob`, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
     results before :class:`FileMatchError` is raised.

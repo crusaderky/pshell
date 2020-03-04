@@ -1,13 +1,16 @@
 """Functions for manipulating files
 """
 import logging
+from typing import Sequence
 
 from .open import pshell_open
 
 __all__ = ("concatenate",)
 
 
-def concatenate(input_fnames, output_fname, mode="w", **kwargs):
+def concatenate(
+    input_fnames: Sequence[str], output_fname: str, mode: str = "w", **kwargs
+) -> None:
     """Concatenate files. Python equivalent of
     :command:`cat input_fnames[0] input_fnames[1] ... > output_fname`.
 
@@ -39,7 +42,9 @@ def concatenate(input_fnames, output_fname, mode="w", **kwargs):
         _concatenate_text(input_fnames, output_fname, mode, **kwargs)
 
 
-def _concatenate_binary(input_fnames, output_fname, mode, **kwargs):
+def _concatenate_binary(
+    input_fnames: Sequence[str], output_fname: str, mode: str, **kwargs
+) -> None:
     """Implementation of concatenate for binary files
     """
     with pshell_open(output_fname, mode, **kwargs) as ofh:
@@ -49,7 +54,9 @@ def _concatenate_binary(input_fnames, output_fname, mode, **kwargs):
                     ofh.write(chunk)
 
 
-def _concatenate_text(input_fnames, output_fname, mode, **kwargs):
+def _concatenate_text(
+    input_fnames: Sequence[str], output_fname: str, mode: str, **kwargs
+) -> None:
     """Implementation of concatenate for text files
     """
     prepend_newline = False

@@ -7,6 +7,7 @@ import os
 import shutil
 import stat
 from contextlib import contextmanager
+from typing import Iterator, Optional
 
 from .env import resolve_env
 
@@ -25,7 +26,7 @@ __all__ = (
 )
 
 
-def _unix_only():
+def _unix_only() -> None:
     """Crash if running on Windows
     """
     if os.name == "nt":
@@ -33,7 +34,12 @@ def _unix_only():
 
 
 def remove(
-    path, *, recursive=False, force=True, ignore_readonly=False, rename_on_fail=False
+    path: str,
+    *,
+    recursive: bool = False,
+    force: bool = True,
+    ignore_readonly: bool = False,
+    rename_on_fail: bool = False,
 ):
     """Remove file or directory
 
@@ -116,7 +122,7 @@ def remove(
             raise
 
 
-def chdir(path):
+def chdir(path: str) -> None:
     """Move the present-working directory (pwd) into the target directory.
     """
     if path == "":
@@ -126,7 +132,7 @@ def chdir(path):
 
 
 @contextmanager
-def pushd(path):
+def pushd(path: str) -> Iterator[None]:
     """Context manager that moves the pwd into target directory. When leaving
     the context, the pwd is changed back to what it originally was.
 
@@ -154,7 +160,7 @@ def pushd(path):
         os.chdir(cwd)
 
 
-def move(src, dst):
+def move(src: str, dst: str) -> None:
     """Recursively move a file or directory (src) to another location (dst).
     If the destination is a directory or a symlink to a directory, then src is
     moved inside that directory. The destination directory must not already
@@ -165,7 +171,7 @@ def move(src, dst):
     shutil.move(resolve_env(src), resolve_env(dst))
 
 
-def copy(src, dst, *, ignore=None):
+def copy(src: str, dst: str, *, ignore=None) -> None:
     """Recursively copy a file or directory. If src is a regular file and dst
     is a directory, a file with the same basename as src is created (or
     overwritten) in the directory specified. Permission bits and last modified
@@ -206,7 +212,9 @@ def copy(src, dst, *, ignore=None):
         shutil.copy2(src, dst)
 
 
-def backup(path, *, suffix=None, force=False, action="copy"):
+def backup(
+    path: str, *, suffix: str = None, force: bool = False, action: str = "copy"
+) -> Optional[str]:
     """Recursively copy or move a file of directory from <path> to
     <path>.<suffix>.
 
@@ -248,7 +256,7 @@ def backup(path, *, suffix=None, force=False, action="copy"):
     return path_bak
 
 
-def symlink(src, dst, *, force=False, abspath=False):
+def symlink(src: str, dst: str, *, force: bool = False, abspath: bool = False) -> None:
     """Create a symbolic link pointing to src named dst.
 
     This exclusively works in Unix, on POSIX-compatible filesystems.
@@ -305,7 +313,7 @@ def symlink(src, dst, *, force=False, abspath=False):
             os.chdir(cwd_backup)
 
 
-def exists(path):
+def exists(path: str) -> bool:
     """Wrapper around :func:`os.path.exists`, with automated resolution of
     environment variables and logging.
     """
@@ -317,7 +325,7 @@ def exists(path):
     return False
 
 
-def lexists(path):
+def lexists(path: str) -> bool:
     """Wrapper around :func:`os.path.lexists`, with automated resolution of
     environment variables and logging.
     """
@@ -329,7 +337,7 @@ def lexists(path):
     return False
 
 
-def mkdir(path, *, parents=True, force=True):
+def mkdir(path: str, *, parents: bool = True, force: bool = True) -> None:
     """Create target directory.
 
     This function is safe for use in concurrent environments, where multiple
@@ -359,7 +367,7 @@ def mkdir(path, *, parents=True, force=True):
             raise
 
 
-def owner(fname):
+def owner(fname: str) -> str:
     """Return the username of the user owning a file.
 
     This function is not available on Windows.

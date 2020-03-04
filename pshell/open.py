@@ -2,6 +2,7 @@
 """
 import logging
 import os.path
+from typing import IO, Callable, Union
 
 from .env import resolve_env
 
@@ -11,8 +12,14 @@ __all__ = ("pshell_open",)
 # When importing in __init__, we're going to rename pshell_open to just
 # open
 def pshell_open(
-    file, mode="r", *, encoding=None, errors=None, compression="auto", **kwargs
-):
+    file: str,
+    mode: str = "r",
+    *,
+    encoding: str = None,
+    errors: str = None,
+    compression: Union[str, bool] = "auto",
+    **kwargs,
+) -> IO:
     """Open a file handle to target file name or file descriptor.
 
     Unlike the builtin function, this wrapper:
@@ -109,6 +116,7 @@ def pshell_open(
     else:
         logging.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
 
+    open_func: Callable[..., IO]
     if compression is False:
         open_func = open
     elif compression == "gzip":

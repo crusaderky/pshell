@@ -4,13 +4,14 @@ import logging
 import os
 import string
 from contextlib import contextmanager
+from typing import IO, Iterator, Optional
 
 from .call import check_output
 
 __all__ = ("source", "putenv", "override_env", "resolve_env")
 
 
-def source(bash_file, *, stderr=None):
+def source(bash_file: str, *, stderr: IO = None) -> None:
     """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
     The acquired variables are injected into ``os.environment`` and are
@@ -46,7 +47,7 @@ def source(bash_file, *, stderr=None):
             os.environ[key] = value
 
 
-def putenv(key, value):
+def putenv(key: str, value: Optional[str]) -> None:
     """Set environment variable. The new variable will be visible to the
     current process and all subprocesses forked from it.
 
@@ -69,7 +70,7 @@ def putenv(key, value):
 
 
 @contextmanager
-def override_env(key, value):
+def override_env(key: str, value: Optional[str]) -> Iterator[None]:
     """Context manager that overrides an environment variable, returns control,
     and then restores it to its original value (or deletes it if it did not
     exist before).
@@ -99,7 +100,7 @@ def override_env(key, value):
         putenv(key, orig)
 
 
-def resolve_env(s):
+def resolve_env(s: str) -> str:
     """Resolve all environment variables in target string.
 
     This command always uses the bash syntax ``$VARIABLE`` or ``${VARIABLE}``.
