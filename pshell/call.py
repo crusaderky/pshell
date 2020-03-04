@@ -6,6 +6,7 @@ import os
 import subprocess
 import threading
 from contextlib import contextmanager
+from typing import IO, List, Optional, Tuple, Union
 
 __all__ = ("real_fh", "call", "check_call", "check_output")
 
@@ -16,7 +17,7 @@ Set errexit, pipefail, and nounset.
 
 
 @contextmanager
-def real_fh(fh):
+def real_fh(fh: Optional[IO]):
     """The :mod:`io` module offers file-like objects which can be used to spoof
     a file handle. Among other things, they are extensively used by nosetests
     and py.test to capture stdout/stderr.
@@ -111,7 +112,9 @@ def real_fh(fh):
         real_fh_in.close()
 
 
-def _call_cmd(cmd, obfuscate_pwd, shell):
+def _call_cmd(
+    cmd: Union[str, List[str]], obfuscate_pwd: Optional[str], shell: bool
+) -> Tuple[Union[str, List[str]], bool]:
     """Common internal helper of check_call, call, and check_output
     that pre-processes the command to be executed
     """
@@ -136,15 +139,15 @@ def _call_cmd(cmd, obfuscate_pwd, shell):
 
 
 def call(
-    cmd,
+    cmd: Union[str, List[str]],
     *,
-    stdout=None,
-    stdin=None,
-    stderr=None,
-    obfuscate_pwd=None,
-    shell=True,
-    timeout=None,
-):
+    stdout: IO = None,
+    stdin: IO = None,
+    stderr: IO = None,
+    obfuscate_pwd: str = None,
+    shell: bool = True,
+    timeout: Union[int, float] = None,
+) -> int:
     """Run another program in a subprocess and wait for it to terminate.
 
     :param cmd:
@@ -196,15 +199,15 @@ def call(
 
 
 def check_call(
-    cmd,
+    cmd: Union[str, List[str]],
     *,
-    stdin=None,
-    stdout=None,
-    stderr=None,
-    obfuscate_pwd=None,
-    shell=True,
-    timeout=None,
-):
+    stdout: IO = None,
+    stdin: IO = None,
+    stderr: IO = None,
+    obfuscate_pwd: str = None,
+    shell: bool = True,
+    timeout: Union[int, float] = None,
+) -> None:
     """Run another program in a subprocess and wait for it to terminate; raise
     exception in case of non-zero exit code.
 
@@ -228,16 +231,16 @@ def check_call(
 
 
 def check_output(
-    cmd,
+    cmd: Union[str, List[str]],
     *,
-    stdin=None,
-    stderr=None,
-    obfuscate_pwd=None,
-    shell=True,
-    timeout=None,
-    decode=True,
-    encoding="utf-8",
-    errors="replace",
+    stdin: IO = None,
+    stderr: IO = None,
+    obfuscate_pwd: str = None,
+    shell: bool = True,
+    timeout: Union[int, float] = None,
+    decode: bool = True,
+    encoding: str = "utf-8",
+    errors: str = "replace",
 ):
     """Run another program in a subprocess and wait for it to terminate; return
     its stdout. Raise exception in case of non-zero exit code.
