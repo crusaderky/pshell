@@ -39,8 +39,8 @@ extensions = [
 ]
 
 extlinks = {
-    'issue': ('https://github.com/crusaderky/pshell/issues/%s', 'GH'),
-    'pull': ('https://github.com/crusaderky/pshell/pull/%s', 'PR'),
+    'issue': ('https://github.com/crusaderky/pshell/issues/%s', '#'),
+    'pull': ('https://github.com/crusaderky/pshell/pull/%s', '#'),
 }
 
 autosummary_generate = True
@@ -66,7 +66,7 @@ copyright = '2018-%s, pshell Developers' % datetime.datetime.now().year
 # built documents.
 #
 # The short X.Y version.
-version = pshell.version.short_version
+version = pshell.__version__.split("+")[0]
 # The full version, including alpha/beta/rc tags.
 release = pshell.__version__
 

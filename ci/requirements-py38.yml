@@ -1,9 +1,11 @@
 name: test_env
 channels:
-  - anaconda
+  - conda-forge
 dependencies:
-  - python=3.6
-  - coveralls
+  - python=3.8
   - psutil
   - pytest
   - pytest-cov
+  - flake8
+  - black
+  - mypy

@@ -1,9 +1,8 @@
 name: test_env
 channels:
-  - anaconda
+  - conda-forge
 dependencies:
-  - python=3.5
-  - coveralls
-  - psutil=3.2
-  - pytest=3.1
+  - python=3.6
+  - psutil=5.0
+  - pytest
   - pytest-cov

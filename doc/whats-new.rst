@@ -8,8 +8,11 @@ What's New
 v1.2.0 (Unreleased)
 -------------------
 
-- Mandatory flake8 in CI `Guido Imperiale`_
-- Add unitests for kill() around SIGTERM handling (#6) `Jacob Lin`_
+- Added support for Python 3.8; dropped support for Python 3.5
+- Increased minimum required version of psutil to 5.0
+- Mandatory flake8, black, isort, and mypy in CI
+- Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
+- Use setuptools-scm for versioning
 
 
 .. _whats-new.1.1.0:
@@ -18,14 +21,12 @@ v1.1.0 (2018-11-19)
 -------------------
 
 - Many bugfixes for Windows. Removed bash dependency in Windows;
-  commands run in cmd by default. `Guido Imperiale`_
+  commands run in cmd by default.
 - Breaking API change: changed ``kill_procs(procs)`` to ``kill(*procs)``
-  `Guido Imperiale`_
 - :func:`~pshell.kill` now accepts integer PIDs in addition to
-  :class:`psutil.Process` objects `Guido Imperiale`_
-- New function :func:`~pshell.killall` `Guido Imperiale`_
+  :class:`psutil.Process` objects
+- New function :func:`~pshell.killall`
 - New ``ignore_readonly`` parameter for :func:`~pshell.remove`
-  `Guido Imperiale`_
 
 
 .. _whats-new.1.0.0:
@@ -44,9 +45,8 @@ API changes:
 
 - Merged ``gzip.open`` into :func:`~pshell.open`.
   Added support for bzip2 and lzma compression.
-- Changed parameters of :func:`~pshell.concatente`.
+- Changed parameters of :func:`~pshell.concatenate`.
   By default, the output file is deleted if it already exists.
 
 
-.. _`Guido Imperiale`: https://github.com/crusaderky
 .. _`Jacob Lin`: https://github.com/jcclin

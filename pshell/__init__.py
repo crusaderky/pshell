@@ -1,14 +1,13 @@
 """Convenience aggregator for all submodules
 """
 
+import pkg_resources
+
 try:
-    from .version import version as __version__  # noqa: F401
-except ImportError:  # pragma: no cover
-    raise ImportError('pshell not properly installed. If you are running'
-                      ' from the source directory, please instead '
-                      'create a new virtual environment (using conda or '
-                      'virtualenv) and then install it in-place by running: '
-                      'pip install -e .')
+    __version__ = pkg_resources.get_distribution("pshell").version
+except Exception:
+    # Local copy, not installed with setuptools
+    __version__ = "999"
 
 
 from subprocess import CalledProcessError, TimeoutExpired   # noqa: F401
