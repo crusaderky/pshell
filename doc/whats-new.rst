@@ -8,16 +8,26 @@ What's New
 v1.2.0 (Unreleased)
 -------------------
 
+Code changes
+^^^^^^^^^^^^
+- Type annotations
+- New function :func:`wait_for_server`
+- Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
+
+Packaging changes
+^^^^^^^^^^^^^^^^^
 - Added support for Python 3.8; dropped support for Python 3.5
 - Increased minimum required version of psutil to 5.3
-- Type annotations
-- Mandatory flake8, black, isort, and mypy in CI
-- Migrated CI from conda to pip
-- Migrated CI from Travis+AppVeyor to GitHub Workflows
-- Integrated CI with codecov.io
-- Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
 - Use setuptools-scm for versioning
-- New function :func:`wait_for_server`
+
+CI changes
+^^^^^^^^^^
+- Migrated from conda to pip
+- Migrated from Travis+AppVeyor to GitHub Workflows
+- Integrated with codecov.io
+- Run test suite on MacOS
+- Run test suite on Windows with Python 3.6 and 3.7
+- Mandatory flake8, black, isort, and mypy
 
 
 .. _whats-new.1.1.0:
