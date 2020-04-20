@@ -27,6 +27,6 @@ from .search import FileMatchError, glob, iglob  # noqa: F401
 
 try:
     __version__ = pkg_resources.get_distribution("pshell").version
-except Exception:
+except Exception:  # pragma: nocover
     # Local copy, not installed with setuptools
     __version__ = "999"
