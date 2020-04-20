@@ -1,4 +1,4 @@
-*.py[cod]
+*.pyc
 __pycache__
 
 # C extensions
@@ -24,6 +24,7 @@ pip-log.txt
 
 # Unit test / coverage reports
 .coverage*
+coverage.xml
 .tox
 nosetests.xml
 .cache
@@ -58,3 +59,4 @@ Icon*
 
 doc/_build
 Untitled.ipynb
+htmlcov/

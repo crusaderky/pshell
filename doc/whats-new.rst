@@ -12,6 +12,9 @@ v1.2.0 (Unreleased)
 - Increased minimum required version of psutil to 5.3
 - Type annotations
 - Mandatory flake8, black, isort, and mypy in CI
+- Migrated CI from conda to pip
+- Migrated CI from Travis+AppVeyor to GitHub Workflows
+- Integrated CI with codecov.io
 - Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
 - Use setuptools-scm for versioning
 - New function :func:`wait_for_server`
