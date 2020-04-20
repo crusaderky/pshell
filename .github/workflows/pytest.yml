@@ -1,0 +1,38 @@
+name: Test latest
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: ['*']
+
+jobs:
+  build:
+    name: ${{ matrix.python-version }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install coverage pytest .
+
+      - name: pytest
+        run: |
+          coverage run -m pytest -v
+          coverage xml
+
+      - name: codecov.io
+        uses: codecov/codecov-action@v1
