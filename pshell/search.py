@@ -71,16 +71,16 @@ def glob(pathname, *, min_results=0, max_results=None):
     protection from non-existing paths.
 
     :param pathname:
-        bash-like wildcard expression
+        Bash-like wildcard expression. Can be a string or a :class:`pathlib.Path`.
     :param int min_results:
-        minimum number of expected results
+        Minimum number of expected results
     :param int max_results:
-        maximum number of expected results. Omit for no maximum.
+        Maximum number of expected results. Omit for no maximum.
     :raises FileMatchError:
-        if found less results than min_results or more than max_results
+        If found less results than min_results or more than max_results
     :returns:
-        List of matching files or directories. The return type of the outputs matches
-        the type of pathname.
+        List of matching files or directories.
+        The return type of the outputs matches the type of pathname.
     """
     if min_results < 0:
         raise ValueError("min_results must be greater than 0")
