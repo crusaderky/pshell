@@ -53,21 +53,16 @@ def test_real_fh_crash():
     # Test that the output copy is wrapped by a `finally` clause,
     # so that it is not lost if the wrapped code raises an Exception
     fh = io.StringIO()
-    try:
+    with pytest.raises(StubError):
         with sh.real_fh(fh) as rfh:
             rfh.write("Hello world")
             raise StubError()
-    except StubError:
-        pass
-    else:
-        # Exception isn't masked
-        assert False
 
     assert fh.getvalue() == "Hello world"
 
 
 @pytest.mark.skip("no way of testing this with pytest")
-def test_real_fh_nosetests():
+def test_real_fh_nosetests():  # pragma: nocover
     # sys.stdout and sys.stderr have been monkey-patched by nosetests
     # with a custom class (not io.StringIO!)
     with sh.real_fh(sys.stdout) as rfh:
@@ -326,3 +321,9 @@ def test_check_output_real_fh_stringio():
 @unix_only
 def test_check_output_real_fh_nosetests():
     sh.check_output("echo hello 1>&2", stderr=sys.stderr)
+
+
+@unix_only
+def test_call_bad_cmd():
+    with pytest.raises(TypeError):
+        sh.call(HELLO_CMD, shell=True)

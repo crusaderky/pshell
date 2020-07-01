@@ -1,5 +1,6 @@
 import bz2
 import gzip
+import io
 import lzma
 import os
 
@@ -146,3 +147,35 @@ def test_open_fd():
         with sh.open(w, "wb", buffering=0) as fh_w:
             fh_w.write(b"hello world\n")
             assert fh_r.readline() == b"hello world\n"
+
+
+def test_open_invalid_compression():
+    with pytest.raises(ValueError):
+        sh.open("foo", compression="unk")
+
+
+def test_open_fd_invalid_compression():
+    r, _ = os.pipe()
+    with pytest.raises(TypeError):
+        sh.open(r, "rb", compression="gzip")
+
+
+@pytest.mark.parametrize(
+    "decompress,compression",
+    [(gzip.decompress, "gzip"), (bz2.decompress, "bzip2"), (lzma.decompress, "lzma")],
+)
+def test_open_fh_compression(decompress, compression):
+    buf = io.BytesIO()
+    with sh.open(buf, "w", compression=compression) as fh:
+        fh.write("hello world")
+    assert decompress(buf.getvalue()) == b"hello world"
+    buf.seek(0)
+    with sh.open(buf, "r", compression=compression) as fh:
+        assert fh.read() == "hello world"
+
+
+@pytest.mark.parametrize("compression", [False, "auto"])
+def test_open_fh_no_compression(compression):
+    buf = io.BytesIO()
+    with pytest.raises(TypeError):
+        sh.open(buf, compression=compression)
