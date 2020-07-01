@@ -14,7 +14,7 @@ Code changes
 - :doc:`api/log`: Use a custom global or context-local logger.
   The default logger has been changed from the root logger to **pshell**.
 - New function :func:`wait_for_server`
-- Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
+- Add unit tests for kill() around SIGTERM handling (thanks `Jacob Lin`_)
 
 Packaging changes
 ^^^^^^^^^^^^^^^^^
