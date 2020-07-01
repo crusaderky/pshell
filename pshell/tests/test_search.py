@@ -96,3 +96,14 @@ def test_glob_iglob_recursive(tmpdir):
     assert sorted(sh.iglob("%s/**/*.txt" % tmpdir)) == expect
     assert sorted(sh.glob("%s/*/*.txt" % tmpdir)) == expect[3:]
     assert sorted(sh.iglob("%s/*/*.txt" % tmpdir)) == expect[3:]
+
+
+def test_glob_iglob_bad_args():
+    with pytest.raises(ValueError):
+        sh.glob(".", min_results=-1)
+    with pytest.raises(ValueError):
+        next(sh.iglob(".", min_results=-1))
+    with pytest.raises(ValueError):
+        sh.glob(".", min_results=2, max_results=1)
+    with pytest.raises(ValueError):
+        next(sh.iglob(".", min_results=2, max_results=1))

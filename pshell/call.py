@@ -126,7 +126,7 @@ def _call_cmd(
         log_cmd = log_cmd.replace(obfuscate_pwd, "XXXX")
     if shell:
         if not isinstance(cmd, str):
-            raise ValueError("cmd must be a string when shell=True")
+            raise TypeError("cmd must be a string when shell=True")
         if os.name != "nt":
             cmd = [
                 "bash",

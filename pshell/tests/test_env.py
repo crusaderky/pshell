@@ -9,8 +9,7 @@ from . import DATADIR, StubError, unix_only
 
 @unix_only
 def test_source():
-    if "UNITTEST_DATA_1" in os.environ:
-        del os.environ["UNITTEST_DATA_1"]
+    os.environ.pop("UNITTEST_DATA_1", None)
     os.environ["UNITTEST_DATA_2"] = "old"
 
     # Also test variable name resolution

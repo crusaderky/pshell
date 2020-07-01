@@ -1,7 +1,7 @@
 """Functions to open file descriptors
 """
 import os.path
-from typing import IO, Callable, Union
+from typing import IO, BinaryIO, Callable, Union
 
 from . import log
 from .env import resolve_env
@@ -9,10 +9,9 @@ from .env import resolve_env
 __all__ = ("pshell_open",)
 
 
-# When importing in __init__, we're going to rename pshell_open to just
-# open
+# When importing in __init__, we're going to rename pshell_open to just open
 def pshell_open(
-    file: str,
+    file: Union[str, int, BinaryIO],
     mode: str = "r",
     *,
     encoding: str = None,
@@ -28,6 +27,10 @@ def pshell_open(
     - logs the file access
     - supports transparent compression
 
+    :param file:
+        Path to the file to be opened or file descriptor to be wrapped.
+        If compression is set to 'gzip', 'bzip2' or 'lzma', file can also be a binary
+        file handle.
     :param str mode:
         As in the builtin :func:`open` function. It always defaults to text
         mode unless 'b' is explicitly specified; this is unlike
@@ -109,9 +112,7 @@ def pshell_open(
         file = resolve_env(file)
     elif isinstance(file, int):
         if compression:
-            raise ValueError(
-                "compression not supported when opening a " "file descriptor"
-            )
+            raise TypeError("compression not supported when opening a file descriptor")
         log.info("Opening file descriptor %d for %s", file, mode_label)
     else:
         log.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
@@ -133,7 +134,7 @@ def pshell_open(
         open_func = lzma.open
     else:
         raise ValueError(
-            "compression must be False, 'auto', 'gzip', 'bzip2', " "or 'lzma'"
+            "compression must be False, 'auto', 'gzip', 'bzip2', or 'lzma'"
         )
 
     return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)
