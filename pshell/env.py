@@ -105,12 +105,12 @@ def override_env(key: str, value: Union[str, Path, None]) -> Iterator[None]:
 
 @overload
 def resolve_env(s: str) -> str:
-    ...
+    ...  # pragma: nocover
 
 
 @overload
 def resolve_env(s: Path) -> Path:
-    ...
+    ...  # pragma: nocover
 
 
 def resolve_env(s):

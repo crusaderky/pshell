@@ -216,14 +216,14 @@ def copy(src: PathLike, dst: PathLike, *, ignore=None) -> None:
 def backup(
     path: str, *, suffix: str = None, force: bool = False, action: str = "copy"
 ) -> Optional[str]:
-    ...
+    ...  # pragma: nocover
 
 
 @overload
 def backup(
     path: Path, *, suffix: str = None, force: bool = False, action: str = "copy"
 ) -> Optional[Path]:
-    ...
+    ...  # pragma: nocover
 
 
 def backup(path, *, suffix=None, force=False, action="copy"):

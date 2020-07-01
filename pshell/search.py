@@ -46,14 +46,14 @@ class FileMatchError(Exception):
 
 @overload
 def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> List[str]:
-    ...
+    ...  # pragma: nocover
 
 
 @overload
 def glob(
     pathname: Path, *, min_results: int = 0, max_results: int = None
 ) -> List[Path]:
-    ...
+    ...  # pragma: nocover
 
 
 def glob(pathname, *, min_results=0, max_results=None):
@@ -94,14 +94,14 @@ def glob(pathname, *, min_results=0, max_results=None):
 def iglob(
     pathname: str, *, min_results: int = 0, max_results: int = None
 ) -> Iterator[str]:
-    ...
+    ...  # pragma: nocover
 
 
 @overload
 def iglob(
     pathname: Path, *, min_results: int = 0, max_results: int = None
 ) -> Iterator[Path]:
-    ...
+    ...  # pragma: nocover
 
 
 def iglob(pathname, *, min_results=0, max_results=None):
