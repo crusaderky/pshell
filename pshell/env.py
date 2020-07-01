@@ -1,11 +1,11 @@
 """Functions related to environment variables
 """
-import logging
 import os
 import string
 from contextlib import contextmanager
 from typing import IO, Iterator, Optional
 
+from . import log
 from .call import check_output
 
 __all__ = ("source", "putenv", "override_env", "resolve_env")
@@ -35,7 +35,7 @@ def source(bash_file: str, *, stderr: IO = None) -> None:
     :raise CalledProcessError:
         if the command returns with non-zero exit status
     """
-    logging.info("Sourcing environment variables from %s", bash_file)
+    log.info("Sourcing environment variables from %s", bash_file)
 
     stdout = check_output('source "%s" 1>&2 && env' % bash_file, stderr=stderr)
 
@@ -43,7 +43,7 @@ def source(bash_file: str, *, stderr: IO = None) -> None:
         (key, _, value) = line.partition("=")
 
         if key not in ("_", "", "SHLVL") and os.getenv(key) != value:
-            logging.debug("Setting environment variable: %s=%s", key, value)
+            log.debug("Setting environment variable: %s=%s", key, value)
             os.environ[key] = value
 
 
@@ -61,10 +61,10 @@ def putenv(key: str, value: Optional[str]) -> None:
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
     """
     if value is None:
-        logging.info("Deleting environment variable %s", key)
+        log.info("Deleting environment variable %s", key)
         os.environ.pop(key, None)
     else:
-        logging.info("Setting environment variable %s=%s", key, value)
+        log.info("Setting environment variable %s=%s", key, value)
         # Do NOT use os.putenv() - see python documentation
         os.environ[key] = resolve_env(value)
 

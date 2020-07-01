@@ -1,8 +1,8 @@
 """Functions for manipulating files
 """
-import logging
 from typing import Sequence
 
+from . import log
 from .open import pshell_open
 
 __all__ = ("concatenate",)
@@ -34,7 +34,7 @@ def concatenate(
     in binary mode, the inputs will too; no extra bytes will be added between
     files.
     """
-    logging.info("Appending files: %s to: %s", input_fnames, output_fname)
+    log.info("Appending files: %s to: %s", input_fnames, output_fname)
 
     if "b" in mode:
         _concatenate_binary(input_fnames, output_fname, mode, **kwargs)
@@ -78,10 +78,10 @@ def _concatenate_text(
                 # and \r\n (Windows).
                 prepend_newline = fh.read() != b"\n"
         except FileNotFoundError as e:
-            logging.info("%s", e)
+            log.info("%s", e)
         except OSError:
             # Empty file
-            logging.info("Empty file: %s", output_fname)
+            log.info("Empty file: %s", output_fname)
 
     with pshell_open(output_fname, mode, **kwargs) as ofh:
         if prepend_newline:

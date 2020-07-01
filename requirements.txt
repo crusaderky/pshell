@@ -1,0 +1,4 @@
+# This file is redundant with setup.cfg but it is needed by github to follow dependencies
+setuptools  # For pkg_resources
+psutil >= 5.3
+contextvars;python_version<'3.7'

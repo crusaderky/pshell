@@ -11,6 +11,8 @@ v1.2.0 (Unreleased)
 Code changes
 ^^^^^^^^^^^^
 - Type annotations
+- :doc:`api/log`: Use a custom global or context-local logger.
+  The default logger has been changed from the root logger to **pshell**.
 - New function :func:`wait_for_server`
 - Add unitests for kill() around SIGTERM handling (:pull:`6`) (thanks `Jacob Lin`_)
 

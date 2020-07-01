@@ -63,6 +63,7 @@ API Reference
    api/call
    api/env
    api/file
+   api/log
    api/manipulate
    api/open
    api/procs
