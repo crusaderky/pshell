@@ -2,7 +2,7 @@
 """
 import glob as _glob
 from pathlib import Path
-from typing import Iterator, List, overload
+from typing import Iterator, List, Optional, Union, overload
 
 from . import log
 from .env import resolve_env
@@ -14,34 +14,43 @@ class FileMatchError(Exception):
     """:func:`glob` or :func:`iglob` returned not enough or too many matches
     """
 
-    @classmethod
-    def build(cls, pathname, min_results, max_results, got_results, or_more=False):
-        """Build the message string
+    @property
+    def pathname(self) -> Union[str, Path]:
+        return self.args[0]
 
-        .. note::
-           All Exceptions must support being rebuilt from str(self), in order
-           to transit from a process pool executor back to the main process
-           through pickle/unpickle. This is why we can't just define __init__
-           with all these arguments.
+    @property
+    def min_results(self) -> int:
+        return self.args[1]
 
-        :returns:
-            new FileMatchError object
-        """
-        msg = "File match '%s' produced %d%s results, expected " % (
-            pathname,
-            got_results,
-            " or more" if or_more else "",
-        )
-        if max_results is None:
-            msg += "at least %d" % min_results
-        elif max_results == min_results:
-            msg += "exactly %d" % min_results
-        elif min_results > 0:
-            msg += "between %d and %d" % (min_results, max_results)
+    @property
+    def max_results(self) -> Optional[int]:
+        return self.args[2]
+
+    @property
+    def got_results(self) -> int:
+        return self.args[3]
+
+    @property
+    def maybe_extra_results(self) -> bool:
+        try:
+            return self.args[4]
+        except IndexError:
+            return False
+
+    def __str__(self) -> str:
+        msg = f"File match '{self.pathname}' produced "
+        if self.maybe_extra_results:
+            msg += "at least "
+        msg += f"{self.got_results} results; expected"
+
+        if self.max_results is None:
+            return f"{msg} at least {self.min_results}"
+        elif self.max_results == self.min_results:
+            return f"{msg} exactly {self.min_results}"
+        elif self.min_results > 0:
+            return f"{msg} between {self.min_results} and {self.max_results}"
         else:
-            msg += "up to %d" % max_results
-
-        return cls(msg)
+            return f"{msg} up to {self.max_results}"
 
 
 @overload
@@ -62,16 +71,16 @@ def glob(pathname, *, min_results=0, max_results=None):
     protection from non-existing paths.
 
     :param pathname:
-        bash-like wildcard expression
+        Bash-like wildcard expression. Can be a string or a :class:`pathlib.Path`.
     :param int min_results:
-        minimum number of expected results
+        Minimum number of expected results
     :param int max_results:
-        maximum number of expected results. Omit for no maximum.
+        Maximum number of expected results. Omit for no maximum.
     :raises FileMatchError:
-        if found less results than min_results or more than max_results
+        If found less results than min_results or more than max_results
     :returns:
-        List of matching files or directories. The return type of the outputs matches
-        the type of pathname.
+        List of matching files or directories.
+        The return type of the outputs matches the type of pathname.
     """
     if min_results < 0:
         raise ValueError("min_results must be greater than 0")
@@ -82,9 +91,7 @@ def glob(pathname, *, min_results=0, max_results=None):
     if len(results) < min_results or (
         max_results is not None and len(results) > max_results
     ):
-        raise FileMatchError.build(
-            str(pathname), min_results, max_results, len(results)
-        )
+        raise FileMatchError(pathname, min_results, max_results, len(results))
 
     log.info("File match %s produced %d results", pathname, len(results))
     return [Path(r) for r in results] if isinstance(pathname, Path) else results
@@ -135,12 +142,10 @@ def iglob(pathname, *, min_results=0, max_results=None):
     for result in _glob.iglob(resolve_env(str(pathname)), recursive=True):
         count += 1
         if max_results is not None and count > max_results:
-            raise FileMatchError.build(
-                str(pathname), min_results, max_results, count, or_more=True
-            )
+            raise FileMatchError(pathname, min_results, max_results, count, True)
         yield Path(result) if isinstance(pathname, Path) else result
 
     if count < min_results:
-        raise FileMatchError.build(str(pathname), min_results, max_results, count)
+        raise FileMatchError(pathname, min_results, max_results, count)
 
     log.info("File match %s produced %d results", pathname, count)

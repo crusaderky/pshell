@@ -1,4 +1,6 @@
 import os
+import pickle
+from pathlib import Path
 
 import pytest
 
@@ -42,28 +44,28 @@ def test_glob_iglob(str_or_path, tmpdir):
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=4)
     assert (
         str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results, expected at least 4"
+        "3 results; expected at least 4"
     )
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), max_results=2)
     assert (
         str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results, expected up to 2"
+        "3 results; expected up to 2"
     )
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=1, max_results=2)
     assert (
         str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results, expected between 1 and 2"
+        "3 results; expected between 1 and 2"
     )
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=2, max_results=2)
     assert (
         str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results, expected exactly 2"
+        "3 results; expected exactly 2"
     )
 
     # iglob exceptions
@@ -73,16 +75,16 @@ def test_glob_iglob(str_or_path, tmpdir):
     with pytest.raises(sh.FileMatchError) as e:
         next(it)
     assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "2 or more results, expected up to 1"
+        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced at least 2 "
+        "results; expected up to 1"
     )
 
     it = sh.iglob(str_or_path("$UNITTEST_BASH/notfound"), min_results=1)
     with pytest.raises(sh.FileMatchError) as e:
         next(it)
     assert (
-        str(e.value) == "File match '$UNITTEST_BASH/notfound' produced "
-        "0 results, expected at least 1"
+        str(e.value) == "File match '$UNITTEST_BASH/notfound' produced 0 results; "
+        "expected at least 1"
     )
 
 
@@ -117,3 +119,34 @@ def test_glob_iglob_bad_args():
         sh.glob(".", min_results=2, max_results=1)
     with pytest.raises(ValueError):
         next(sh.iglob(".", min_results=2, max_results=1))
+
+
+@pytest.mark.parametrize(
+    "args,s",
+    [
+        (
+            ("foo", 1, None, 0),
+            "File match 'foo' produced 0 results; expected at least 1",
+        ),
+        (
+            (Path("foo"), 1, None, 0),
+            "File match 'foo' produced 0 results; expected at least 1",
+        ),
+        (("foo", 1, 1, 0), "File match 'foo' produced 0 results; expected exactly 1"),
+        (
+            ("foo", 2, 3, 0),
+            "File match 'foo' produced 0 results; expected between 2 and 3",
+        ),
+        (("foo", 0, 3, 4), "File match 'foo' produced 4 results; expected up to 3"),
+        (
+            ("foo", 0, 3, 4, True),
+            "File match 'foo' produced at least 4 results; expected up to 3",
+        ),
+    ],
+)
+def test_filematcherror(args, s):
+    e = sh.FileMatchError(*args)
+    assert str(e) == s
+    # Exception with required arguments typically fail to unpickle
+    e2 = pickle.loads(pickle.dumps(e))
+    assert str(e2) == s

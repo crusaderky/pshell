@@ -231,7 +231,7 @@ def backup(path, *, suffix=None, force=False, action="copy"):
     <path>.<suffix>.
 
     :param path:
-        File or directory to back up
+        File or directory to back up. Can be a string or a :class:`pathlib.Path`.
     :param str suffix:
         suffix for the backup file. Default: .YYYYMMDD-HHMMSS
     :param bool force:
