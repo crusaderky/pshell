@@ -3,6 +3,7 @@
 import getpass
 import os
 import time
+from pathlib import Path
 from typing import Collection, List, Union
 
 import psutil
@@ -13,7 +14,7 @@ from .env import resolve_env
 __all__ = ("find_procs_by_cmdline", "kill")
 
 
-def find_procs_by_cmdline(*cmdlines: str) -> List[psutil.Process]:
+def find_procs_by_cmdline(*cmdlines: Union[str, Path]) -> List[psutil.Process]:
     """Search all processes that have a partial match for at least one of the
     given command lines. Command lines are parsed through :func:`resolve_env`.
 
@@ -50,7 +51,7 @@ def find_procs_by_cmdline(*cmdlines: str) -> List[psutil.Process]:
     :returns:
         list of :class:`psutil.Process` objects
     """
-    matches = [resolve_env(x) for x in cmdlines]
+    matches = [resolve_env(str(x)) for x in cmdlines]
 
     log.debug(
         "Finding processes that match command lines:\n  - %s", "\n  - ".join(matches)
@@ -178,7 +179,7 @@ def kill(
     log.info("All processes terminated")
 
 
-def killall(*cmdlines: str, term_timeout: Union[int, float] = 10) -> None:
+def killall(*cmdlines: Union[str, Path], term_timeout: Union[int, float] = 10) -> None:
     """Find all processes with the target command line(s), send SIGTERM, and
     then send SIGKILL to the survivors.
 

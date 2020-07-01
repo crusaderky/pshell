@@ -3,7 +3,8 @@
 import os
 import string
 from contextlib import contextmanager
-from typing import IO, Iterator, Optional
+from pathlib import Path
+from typing import IO, Iterator, Union, overload
 
 from . import log
 from .call import check_output
@@ -11,7 +12,7 @@ from .call import check_output
 __all__ = ("source", "putenv", "override_env", "resolve_env")
 
 
-def source(bash_file: str, *, stderr: IO = None) -> None:
+def source(bash_file: Union[str, Path], *, stderr: IO = None) -> None:
     """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
     The acquired variables are injected into ``os.environment`` and are
@@ -25,7 +26,7 @@ def source(bash_file: str, *, stderr: IO = None) -> None:
 
         The script is run with errexit, pipefail, nounset.
 
-    :param str bash_file:
+    :param bash_file:
         Path to the bash file. It can contain environment variables.
     :param stderr:
         standard error file handle. Omit for sys.stderr.
@@ -37,7 +38,7 @@ def source(bash_file: str, *, stderr: IO = None) -> None:
     """
     log.info("Sourcing environment variables from %s", bash_file)
 
-    stdout = check_output('source "%s" 1>&2 && env' % bash_file, stderr=stderr)
+    stdout = check_output(f'source "{bash_file}" 1>&2 && env', stderr=stderr)
 
     for line in stdout.splitlines():
         (key, _, value) = line.partition("=")
@@ -47,7 +48,7 @@ def source(bash_file: str, *, stderr: IO = None) -> None:
             os.environ[key] = value
 
 
-def putenv(key: str, value: Optional[str]) -> None:
+def putenv(key: str, value: Union[str, Path, None]) -> None:
     """Set environment variable. The new variable will be visible to the
     current process and all subprocesses forked from it.
 
@@ -59,6 +60,7 @@ def putenv(key: str, value: Optional[str]) -> None:
     :param value:
         Variable value. String to set a value, or None to delete the variable.
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
+        :class:`~pathlib.Path` objects are transparently converted to strings.
     """
     if value is None:
         log.info("Deleting environment variable %s", key)
@@ -66,11 +68,11 @@ def putenv(key: str, value: Optional[str]) -> None:
     else:
         log.info("Setting environment variable %s=%s", key, value)
         # Do NOT use os.putenv() - see python documentation
-        os.environ[key] = resolve_env(value)
+        os.environ[key] = resolve_env(str(value))
 
 
 @contextmanager
-def override_env(key: str, value: Optional[str]) -> Iterator[None]:
+def override_env(key: str, value: Union[str, Path, None]) -> Iterator[None]:
     """Context manager that overrides an environment variable, returns control,
     and then restores it to its original value (or deletes it if it did not
     exist before).
@@ -80,6 +82,7 @@ def override_env(key: str, value: Optional[str]) -> Iterator[None]:
     :param value:
         Variable value. String to set a value, or None to delete the variable.
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
+        :class:`~pathlib.Path` objects are transparently converted to strings.
 
     Example::
 
@@ -100,8 +103,18 @@ def override_env(key: str, value: Optional[str]) -> Iterator[None]:
         putenv(key, orig)
 
 
+@overload
 def resolve_env(s: str) -> str:
-    """Resolve all environment variables in target string.
+    ...  # pragma: nocover
+
+
+@overload
+def resolve_env(s: Path) -> Path:
+    ...  # pragma: nocover
+
+
+def resolve_env(s):
+    """Resolve all environment variables in target string or :class:`~pathlib.Path`.
 
     This command always uses the bash syntax ``$VARIABLE`` or ``${VARIABLE}``.
     This also applies in Windows. Windows native syntax ``%VARIABLE%`` is not
@@ -110,14 +123,15 @@ def resolve_env(s: str) -> str:
     Unlike in :func:`os.path.expandvars`, undefined variables raise an
     exception instead of being silently replaced by an empty string.
 
-    :param str s:
-        string potentially containing environment variables
+    :param s:
+        string or :class:`~pathlib.Path` potentially containing environment variables
     :returns:
-        resolved string
+        resolved string, or :class:`~pathlib.Path` if the input is a
+        :class:`~pathlib.Path`
     :raise EnvironmentError:
         in case of missing environment variable
     """
     try:
-        return string.Template(s).substitute(os.environ)
+        return type(s)(string.Template(str(s)).substitute(os.environ))
     except KeyError as e:
-        raise EnvironmentError("Environment variable %s not found" % e)
+        raise EnvironmentError(f"Environment variable {e} not found")

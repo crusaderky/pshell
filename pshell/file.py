@@ -6,7 +6,8 @@ import os
 import shutil
 import stat
 from contextlib import contextmanager
-from typing import Iterator, Optional
+from pathlib import Path
+from typing import Iterator, Optional, Union, overload
 
 from . import log
 from .env import resolve_env
@@ -25,6 +26,8 @@ __all__ = (
     "owner",
 )
 
+PathLike = Union[str, Path]
+
 
 def _unix_only() -> None:
     """Crash if running on Windows
@@ -34,7 +37,7 @@ def _unix_only() -> None:
 
 
 def remove(
-    path: str,
+    path: PathLike,
     *,
     recursive: bool = False,
     force: bool = True,
@@ -43,7 +46,7 @@ def remove(
 ):
     """Remove file or directory
 
-    :param str path:
+    :param path:
         Target file or directory
     :param bool recursive:
         If True, recursively delete tree starting at path
@@ -122,17 +125,16 @@ def remove(
             raise
 
 
-def chdir(path: str) -> None:
+def chdir(path: PathLike) -> None:
     """Move the present-working directory (pwd) into the target directory.
     """
-    if path == "":
-        path = "."
+    path = Path(path)
     log.info("chdir %s", path)
     os.chdir(resolve_env(path))
 
 
 @contextmanager
-def pushd(path: str) -> Iterator[None]:
+def pushd(path: PathLike) -> Iterator[None]:
     """Context manager that moves the pwd into target directory. When leaving
     the context, the pwd is changed back to what it originally was.
 
@@ -147,9 +149,7 @@ def pushd(path: str) -> Iterator[None]:
         ...
         popd
     """
-    if path == "":
-        path = "."
-
+    path = Path(path)
     cwd = os.getcwd()
     log.info("pushd %s", path)
     os.chdir(resolve_env(path))
@@ -160,7 +160,7 @@ def pushd(path: str) -> Iterator[None]:
         os.chdir(cwd)
 
 
-def move(src: str, dst: str) -> None:
+def move(src: PathLike, dst: PathLike) -> None:
     """Recursively move a file or directory (src) to another location (dst).
     If the destination is a directory or a symlink to a directory, then src is
     moved inside that directory. The destination directory must not already
@@ -168,10 +168,10 @@ def move(src: str, dst: str) -> None:
     overwritten depending on :func:`os.rename` semantics.
     """
     log.info("Moving %s to %s", src, dst)
-    shutil.move(resolve_env(src), resolve_env(dst))
+    shutil.move(resolve_env(str(src)), resolve_env(str(dst)))
 
 
-def copy(src: str, dst: str, *, ignore=None) -> None:
+def copy(src: PathLike, dst: PathLike, *, ignore=None) -> None:
     """Recursively copy a file or directory. If src is a regular file and dst
     is a directory, a file with the same basename as src is created (or
     overwritten) in the directory specified. Permission bits and last modified
@@ -212,12 +212,26 @@ def copy(src: str, dst: str, *, ignore=None) -> None:
         shutil.copy2(src, dst)
 
 
+@overload
 def backup(
     path: str, *, suffix: str = None, force: bool = False, action: str = "copy"
 ) -> Optional[str]:
+    ...  # pragma: nocover
+
+
+@overload
+def backup(
+    path: Path, *, suffix: str = None, force: bool = False, action: str = "copy"
+) -> Optional[Path]:
+    ...  # pragma: nocover
+
+
+def backup(path, *, suffix=None, force=False, action="copy"):
     """Recursively copy or move a file of directory from <path> to
     <path>.<suffix>.
 
+    :param path:
+        File or directory to back up
     :param str suffix:
         suffix for the backup file. Default: .YYYYMMDD-HHMMSS
     :param bool force:
@@ -227,7 +241,9 @@ def backup(
     :raise FileNotFoundError:
         if path does not exist and force=False
     :returns:
-        renamed path, or None if no backup was performed
+        renamed path, or None if no backup was performed.
+        If path is a :class:`~pathlib.Path`, then the return value is also a
+        :class:`~pathlib.Path`.
     """
     assert action in ("copy", "move")
 
@@ -239,13 +255,13 @@ def backup(
     if suffix is None:
         suffix = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-    path_bak = "%s.%s" % (path, suffix)
+    path_bak = f"{path}.{suffix}"
 
     # In case of collision, call the subsequent backups as .2, .3, etc.
     i = 2
     while os.path.lexists(resolve_env(path_bak)):
         log.info("%s already exists, generating a unique name")
-        path_bak = "%s.%s.%d" % (path, suffix, i)
+        path_bak = f"{path}.{suffix}.{i}"
         i += 1
 
     if action == "copy":
@@ -253,10 +269,12 @@ def backup(
     else:
         move(path, path_bak)
 
-    return path_bak
+    return type(path)(path_bak)
 
 
-def symlink(src: str, dst: str, *, force: bool = False, abspath: bool = False) -> None:
+def symlink(
+    src: PathLike, dst: PathLike, *, force: bool = False, abspath: bool = False
+) -> None:
     """Create a symbolic link pointing to src named dst.
 
     This exclusively works in Unix, on POSIX-compatible filesystems.
@@ -313,7 +331,7 @@ def symlink(src: str, dst: str, *, force: bool = False, abspath: bool = False) -
             os.chdir(cwd_backup)
 
 
-def exists(path: str) -> bool:
+def exists(path: PathLike) -> bool:
     """Wrapper around :func:`os.path.exists`, with automated resolution of
     environment variables and logging.
     """
@@ -325,7 +343,7 @@ def exists(path: str) -> bool:
     return False
 
 
-def lexists(path: str) -> bool:
+def lexists(path: PathLike) -> bool:
     """Wrapper around :func:`os.path.lexists`, with automated resolution of
     environment variables and logging.
     """
@@ -337,13 +355,13 @@ def lexists(path: str) -> bool:
     return False
 
 
-def mkdir(path: str, *, parents: bool = True, force: bool = True) -> None:
+def mkdir(path: PathLike, *, parents: bool = True, force: bool = True) -> None:
     """Create target directory.
 
     This function is safe for use in concurrent environments, where multiple
     actors try to simultaneously create the same directory.
 
-    :param str path:
+    :param path:
         directory to be created
     :param bool parents:
         if True, also create parent directories if necessary.
@@ -367,7 +385,7 @@ def mkdir(path: str, *, parents: bool = True, force: bool = True) -> None:
             raise
 
 
-def owner(fname: str) -> str:
+def owner(fname: PathLike) -> str:
     """Return the username of the user owning a file.
 
     This function is not available on Windows.

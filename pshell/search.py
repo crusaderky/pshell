@@ -1,7 +1,8 @@
 """Search and file system traversal functions
 """
 import glob as _glob
-from typing import Iterator, List
+from pathlib import Path
+from typing import Iterator, List, overload
 
 from . import log
 from .env import resolve_env
@@ -43,12 +44,24 @@ class FileMatchError(Exception):
         return cls(msg)
 
 
+@overload
 def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> List[str]:
+    ...  # pragma: nocover
+
+
+@overload
+def glob(
+    pathname: Path, *, min_results: int = 0, max_results: int = None
+) -> List[Path]:
+    ...  # pragma: nocover
+
+
+def glob(pathname, *, min_results=0, max_results=None):
     """Like :func:`glob.glob`, but in addition it supports environment
     variables in pathname, logs the number of results, and incorporates
     protection from non-existing paths.
 
-    :param str pathname:
+    :param pathname:
         bash-like wildcard expression
     :param int min_results:
         minimum number of expected results
@@ -56,25 +69,42 @@ def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> Lis
         maximum number of expected results. Omit for no maximum.
     :raises FileMatchError:
         if found less results than min_results or more than max_results
+    :returns:
+        List of matching files or directories. The return type of the outputs matches
+        the type of pathname.
     """
     if min_results < 0:
         raise ValueError("min_results must be greater than 0")
     if max_results is not None and max_results < min_results:
         raise ValueError("max_results must be greater or equal to min_results")
 
-    results = _glob.glob(resolve_env(pathname), recursive=True)
+    results = _glob.glob(resolve_env(str(pathname)), recursive=True)
     if len(results) < min_results or (
         max_results is not None and len(results) > max_results
     ):
-        raise FileMatchError.build(pathname, min_results, max_results, len(results))
+        raise FileMatchError.build(
+            str(pathname), min_results, max_results, len(results)
+        )
 
     log.info("File match %s produced %d results", pathname, len(results))
-    return results
+    return [Path(r) for r in results] if isinstance(pathname, Path) else results
 
 
+@overload
 def iglob(
     pathname: str, *, min_results: int = 0, max_results: int = None
 ) -> Iterator[str]:
+    ...  # pragma: nocover
+
+
+@overload
+def iglob(
+    pathname: Path, *, min_results: int = 0, max_results: int = None
+) -> Iterator[Path]:
+    ...  # pragma: nocover
+
+
+def iglob(pathname, *, min_results=0, max_results=None):
     """Like :func:`glob`, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
     results before :class:`FileMatchError` is raised.
@@ -102,15 +132,15 @@ def iglob(
         raise ValueError("max_results must be greater or equal to min_results")
 
     count = 0
-    for result in _glob.iglob(resolve_env(pathname), recursive=True):
+    for result in _glob.iglob(resolve_env(str(pathname)), recursive=True):
         count += 1
         if max_results is not None and count > max_results:
             raise FileMatchError.build(
-                pathname, min_results, max_results, count, or_more=True
+                str(pathname), min_results, max_results, count, or_more=True
             )
-        yield result
+        yield Path(result) if isinstance(pathname, Path) else result
 
     if count < min_results:
-        raise FileMatchError.build(pathname, min_results, max_results, count)
+        raise FileMatchError.build(str(pathname), min_results, max_results, count)
 
     log.info("File match %s produced %d results", pathname, count)
