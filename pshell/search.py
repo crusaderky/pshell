@@ -1,9 +1,9 @@
 """Search and file system traversal functions
 """
 import glob as _glob
-import logging
 from typing import Iterator, List
 
+from . import log
 from .env import resolve_env
 
 __all__ = ("FileMatchError", "glob", "iglob")
@@ -68,7 +68,7 @@ def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> Lis
     ):
         raise FileMatchError.build(pathname, min_results, max_results, len(results))
 
-    logging.info("File match %s produced %d results", pathname, len(results))
+    log.info("File match %s produced %d results", pathname, len(results))
     return results
 
 
@@ -113,4 +113,4 @@ def iglob(
     if count < min_results:
         raise FileMatchError.build(pathname, min_results, max_results, count)
 
-    logging.info("File match %s produced %d results", pathname, count)
+    log.info("File match %s produced %d results", pathname, count)

@@ -2,13 +2,13 @@
 """
 import datetime
 import errno
-import logging
 import os
 import shutil
 import stat
 from contextlib import contextmanager
 from typing import Iterator, Optional
 
+from . import log
 from .env import resolve_env
 
 __all__ = (
@@ -66,7 +66,7 @@ def remove(
     """
     realpath = resolve_env(path)
 
-    logging.info("Deleting %s", path)
+    log.info("Deleting %s", path)
     try:
         if os.path.islink(realpath):
             os.remove(realpath)
@@ -113,9 +113,9 @@ def remove(
             # Note: this is different than testing for existence and then
             # deleting, as it prevents race conditions when the same path is
             # being deleted from multiple scripts in parallel.
-            logging.info("%s", e)
+            log.info("%s", e)
         elif rename_on_fail and e.errno != errno.ENOENT:
-            logging.warning("%s", e)
+            log.warning("%s", e)
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
             backup(path, suffix="DELETEME." + timestamp, action="move")
         else:
@@ -127,7 +127,7 @@ def chdir(path: str) -> None:
     """
     if path == "":
         path = "."
-    logging.info("chdir %s", path)
+    log.info("chdir %s", path)
     os.chdir(resolve_env(path))
 
 
@@ -151,12 +151,12 @@ def pushd(path: str) -> Iterator[None]:
         path = "."
 
     cwd = os.getcwd()
-    logging.info("pushd %s", path)
+    log.info("pushd %s", path)
     os.chdir(resolve_env(path))
     try:
         yield
     finally:
-        logging.info("popd")
+        log.info("popd")
         os.chdir(cwd)
 
 
@@ -167,7 +167,7 @@ def move(src: str, dst: str) -> None:
     exist. If the destination already exists but is not a directory, it may be
     overwritten depending on :func:`os.rename` semantics.
     """
-    logging.info("Moving %s to %s", src, dst)
+    log.info("Moving %s to %s", src, dst)
     shutil.move(resolve_env(src), resolve_env(dst))
 
 
@@ -201,7 +201,7 @@ def copy(src: str, dst: str, *, ignore=None) -> None:
     :param ignore:
         Only effective when copying a directory. See :func:`shutil.copytree`.
     """
-    logging.info("Copying %s to %s", src, dst)
+    log.info("Copying %s to %s", src, dst)
     src = resolve_env(src)
     dst = resolve_env(dst)
     if os.path.isdir(src):
@@ -233,7 +233,7 @@ def backup(
 
     if force and not os.path.lexists(resolve_env(path)):
         # Do nothing
-        logging.info("%s does not exist, skipping backup", path)
+        log.info("%s does not exist, skipping backup", path)
         return None
 
     if suffix is None:
@@ -244,7 +244,7 @@ def backup(
     # In case of collision, call the subsequent backups as .2, .3, etc.
     i = 2
     while os.path.lexists(resolve_env(path_bak)):
-        logging.info("%s already exists, generating a unique name")
+        log.info("%s already exists, generating a unique name")
         path_bak = "%s.%s.%d" % (path, suffix, i)
         i += 1
 
@@ -293,11 +293,11 @@ def symlink(src: str, dst: str, *, force: bool = False, abspath: bool = False) -
     real_dst = os.path.abspath(resolve_env(dst))
     if force and os.path.islink(real_dst):
         if os.path.abspath(os.path.realpath(real_dst)) == real_src:
-            logging.info("Symlink %s => %s already exists", src, dst)
+            log.info("Symlink %s => %s already exists", src, dst)
             return
         remove(dst)
 
-    logging.info("Creating symlink %s => %s", src, dst)
+    log.info("Creating symlink %s => %s", src, dst)
 
     if abspath:
         os.symlink(real_src, real_dst)
@@ -319,9 +319,9 @@ def exists(path: str) -> bool:
     """
     respath = resolve_env(path)
     if os.path.exists(respath):
-        logging.debug("File exists: %s", path)
+        log.debug("File exists: %s", path)
         return True
-    logging.debug("File does not exist or is a broken symlink: %s", path)
+    log.debug("File does not exist or is a broken symlink: %s", path)
     return False
 
 
@@ -331,9 +331,9 @@ def lexists(path: str) -> bool:
     """
     respath = resolve_env(path)
     if os.path.lexists(respath):
-        logging.debug("File exists: %s", path)
+        log.debug("File exists: %s", path)
         return True
-    logging.debug("File does not exist: %s", path)
+    log.debug("File does not exist: %s", path)
     return False
 
 
@@ -352,7 +352,7 @@ def mkdir(path: str, *, parents: bool = True, force: bool = True) -> None:
     """
     respath = resolve_env(path)
 
-    logging.info("Creating directory %s", path)
+    log.info("Creating directory %s", path)
     try:
         if parents:
             os.makedirs(respath)
@@ -362,7 +362,7 @@ def mkdir(path: str, *, parents: bool = True, force: bool = True) -> None:
         # Cannot rely on checking for EEXIST, since the operating system
         # could give priority to other errors like EACCES or EROFS
         if force and os.path.isdir(respath):
-            logging.info("Directory %s already exists", path)
+            log.info("Directory %s already exists", path)
         else:
             raise
 

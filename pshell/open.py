@@ -1,9 +1,9 @@
 """Functions to open file descriptors
 """
-import logging
 import os.path
 from typing import IO, Callable, Union
 
+from . import log
 from .env import resolve_env
 
 __all__ = ("pshell_open",)
@@ -105,16 +105,16 @@ def pshell_open(
 
     # resolve env variables and write log message.
     if isinstance(file, str):
-        logging.info("Opening '%s' for %s%s", file, mode_label, compress_label)
+        log.info("Opening '%s' for %s%s", file, mode_label, compress_label)
         file = resolve_env(file)
     elif isinstance(file, int):
         if compression:
             raise ValueError(
                 "compression not supported when opening a " "file descriptor"
             )
-        logging.info("Opening file descriptor %d for %s", file, mode_label)
+        log.info("Opening file descriptor %d for %s", file, mode_label)
     else:
-        logging.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
+        log.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
 
     open_func: Callable[..., IO]
     if compression is False:

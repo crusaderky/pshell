@@ -1,13 +1,13 @@
 """Utilities to manage running processes
 """
 import getpass
-import logging
 import os
 import time
 from typing import Collection, List, Union
 
 import psutil
 
+from . import log
 from .env import resolve_env
 
 __all__ = ("find_procs_by_cmdline", "kill")
@@ -52,7 +52,7 @@ def find_procs_by_cmdline(*cmdlines: str) -> List[psutil.Process]:
     """
     matches = [resolve_env(x) for x in cmdlines]
 
-    logging.debug(
+    log.debug(
         "Finding processes that match command lines:\n  - %s", "\n  - ".join(matches)
     )
 
@@ -66,7 +66,7 @@ def find_procs_by_cmdline(*cmdlines: str) -> List[psutil.Process]:
 
             for match in matches:
                 if cmdline.find(match) != -1:
-                    logging.debug("Process %d matches: %s", proc.pid, cmdline)
+                    log.debug("Process %d matches: %s", proc.pid, cmdline)
                     procs.append(proc)
                     break
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
@@ -109,7 +109,7 @@ def kill(
             try:
                 proc = psutil.Process(proc)
             except (psutil.NoSuchProcess, psutil.ZombieProcess):
-                logging.debug(f"PID {proc} does not exist")
+                log.debug(f"PID {proc} does not exist")
                 continue
         elif proc is None:
             # Silently skip - useful as e.g. psutil.Process.parent() can
@@ -120,32 +120,32 @@ def kill(
 
         try:
             if proc.pid == my_pid:
-                logging.debug(
+                log.debug(
                     f"Not terminating PID {proc.pid} as it is the current process"
                 )
                 continue
             children = (child.pid for child in proc.children(recursive=True))
             if my_pid in children:
-                logging.debug(
+                log.debug(
                     f"Not terminating PID {proc.pid} as it is a parent of "
                     "the  current process",
                 )
                 continue
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
-            logging.debug(f"PID {proc.pid} does not exist")
+            log.debug(f"PID {proc.pid} does not exist")
             continue
 
         psutil_procs.append(proc)
 
     if not psutil_procs:
-        logging.info("No processes terminated")
+        log.info("No processes terminated")
         return
 
     if term_timeout == 0:
         kill_procs = psutil_procs
     else:
         kill_procs = []
-        logging.info(
+        log.info(
             "Sending SIGTERM to PIDs %s",
             ",".join(str(proc.pid) for proc in psutil_procs),
         )
@@ -157,13 +157,13 @@ def kill(
                 # Process already died
                 pass
             except psutil.AccessDenied:
-                logging.info(f"Failed to send SIGTERM to PID {proc.pid}: access denied")
+                log.info(f"Failed to send SIGTERM to PID {proc.pid}: access denied")
 
         # Wait up to <term_timeout> seconds for SIGTERM to be received
         _, kill_procs = psutil.wait_procs(kill_procs, term_timeout)
 
     if kill_procs:
-        logging.info(
+        log.info(
             "Sending SIGKILL to PIDs %s", ",".join(str(proc.pid) for proc in kill_procs)
         )
         for proc in kill_procs:
@@ -173,9 +173,9 @@ def kill(
                 # Process already died
                 pass
             except psutil.AccessDenied:
-                logging.info(f"Failed to send SIGKILL to PID {proc.pid}: access denied")
+                log.info(f"Failed to send SIGKILL to PID {proc.pid}: access denied")
 
-    logging.info("All processes terminated")
+    log.info("All processes terminated")
 
 
 def killall(*cmdlines: str, term_timeout: Union[int, float] = 10) -> None:

@@ -20,6 +20,7 @@ from .file import (  # noqa: F401
     remove,
     symlink,
 )
+from .log import context_logger, get_logger, set_global_logger  # noqa: F401
 from .manipulate import concatenate  # noqa: F401
 from .open import pshell_open as open  # noqa: F401
 from .procs import find_procs_by_cmdline, kill, killall, wait_for_server  # noqa: F401

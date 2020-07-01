@@ -1,12 +1,13 @@
 """Functions to execute shell commands in a subprocess
 """
 import io
-import logging
 import os
 import subprocess
 import threading
 from contextlib import contextmanager
 from typing import IO, List, Optional, Tuple, Union
+
+from . import log
 
 __all__ = ("real_fh", "call", "check_call", "check_output")
 
@@ -134,7 +135,7 @@ def _call_cmd(
             ]
             shell = False
 
-    logging.info("Executing: %s", log_cmd)
+    log.info("Executing: %s", log_cmd)
     return cmd, shell
 
 
