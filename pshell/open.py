@@ -1,6 +1,7 @@
 """Functions to open file descriptors
 """
 import os.path
+from pathlib import Path
 from typing import IO, BinaryIO, Callable, Union
 
 from . import log
@@ -11,7 +12,7 @@ __all__ = ("pshell_open",)
 
 # When importing in __init__, we're going to rename pshell_open to just open
 def pshell_open(
-    file: Union[str, int, BinaryIO],
+    file: Union[str, Path, int, BinaryIO],
     mode: str = "r",
     *,
     encoding: str = None,
@@ -86,8 +87,8 @@ def pshell_open(
 
     # Parse compression
     if compression == "auto":
-        if isinstance(file, str):
-            _, ext = os.path.splitext(file)
+        if isinstance(file, (str, Path)):
+            _, ext = os.path.splitext(str(file))
             ext = ext.lower()
 
             if ext == ".gz":
@@ -107,7 +108,7 @@ def pshell_open(
         compress_label = ""
 
     # resolve env variables and write log message.
-    if isinstance(file, str):
+    if isinstance(file, (str, Path)):
         log.info("Opening '%s' for %s%s", file, mode_label, compress_label)
         file = resolve_env(file)
     elif isinstance(file, int):

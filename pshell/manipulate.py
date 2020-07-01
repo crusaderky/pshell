@@ -1,15 +1,18 @@
 """Functions for manipulating files
 """
-from typing import Sequence
+from pathlib import Path
+from typing import Sequence, Union
 
 from . import log
 from .open import pshell_open
 
 __all__ = ("concatenate",)
 
+PathLike = Union[str, Path]
+
 
 def concatenate(
-    input_fnames: Sequence[str], output_fname: str, mode: str = "w", **kwargs
+    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str = "w", **kwargs
 ) -> None:
     """Concatenate files. Python equivalent of
     :command:`cat input_fnames[0] input_fnames[1] ... > output_fname`.
@@ -17,7 +20,7 @@ def concatenate(
     :param input_fnames:
         sequence of str. Paths to one or more input text files, to be appended
         one after the other to the output.
-    :param str output_fname:
+    :param output_fname:
         Path to output text file, which may or may not already exist.
     :param str mode:
         Mode for opening the output file e.g. 'w' or 'ab'.
@@ -43,7 +46,7 @@ def concatenate(
 
 
 def _concatenate_binary(
-    input_fnames: Sequence[str], output_fname: str, mode: str, **kwargs
+    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
 ) -> None:
     """Implementation of concatenate for binary files
     """
@@ -55,7 +58,7 @@ def _concatenate_binary(
 
 
 def _concatenate_text(
-    input_fnames: Sequence[str], output_fname: str, mode: str, **kwargs
+    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
 ) -> None:
     """Implementation of concatenate for text files
     """

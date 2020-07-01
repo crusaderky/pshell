@@ -44,17 +44,18 @@ def get_other_users_proc():
     )  # pragma: nocover
 
 
-def test_find_kill_procs():
+def test_find_kill_procs(str_or_path):
     """Test pshell.find_procs_by_cmdline and pshell.kill
     """
     os.environ["TEST_DATADIR"] = DATADIR
 
     assert sh.find_procs_by_cmdline("this won't match anything") == []
     assert sh.find_procs_by_cmdline("$TEST_DATADIR") == []
+    assert sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR")) == []
 
     test_proc = spawn_test_proc()
 
-    after = sh.find_procs_by_cmdline("$TEST_DATADIR")
+    after = sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR"))
     # Both the bash and cmd variants of the test process spawn short-lived
     # subprocesses. Testing for an exact match of 1 result causes instability
     # in the unit tests.
@@ -74,16 +75,16 @@ def test_find_kill_procs():
     with pytest.raises(psutil.NoSuchProcess):
         test_proc.status()
 
-    assert sh.find_procs_by_cmdline("$TEST_DATADIR") == []
+    assert sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR")) == []
 
 
-def test_killall():
+def test_killall(str_or_path):
     spawn_test_proc()
     # Test for 1+ processes.
     # Don't test for exactly 1 process (see comment above)
-    assert sh.find_procs_by_cmdline(DATADIR)
-    sh.killall(DATADIR)
-    assert not sh.find_procs_by_cmdline(DATADIR)
+    assert sh.find_procs_by_cmdline(str_or_path(DATADIR))
+    sh.killall(str_or_path(DATADIR))
+    assert not sh.find_procs_by_cmdline(str_or_path(DATADIR))
 
 
 def test_kill2():
@@ -109,6 +110,7 @@ def test_kill2():
         sh.kill("foo")
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     os.name == "nt",
     reason="On Windows, os.kill() and psutil.kill() calls TerminateProcess "
@@ -138,6 +140,7 @@ def test_sigkill_sigterm_delay5():
     assert duration_of_kill < 10  # sh.kill() will retry SIGKILL in 10s
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     os.name == "nt",
     reason="On Windows, os.kill() and psutil.kill() calls TerminateProcess "

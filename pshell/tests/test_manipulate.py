@@ -4,12 +4,12 @@ import pshell as sh
 
 
 @pytest.mark.parametrize("newline", ["\n", "\r\n"])
-def test_concatenate_t1(tmpdir, newline):
+def test_concatenate_t1(str_or_path, tmpdir, newline):
     # Output file already exists and is non-empty. Files end without a newline.
     # Test compression.
-    out = "%s/out.gz" % tmpdir
-    in1 = "%s/in1" % tmpdir
-    in2 = "%s/in2.bz2" % tmpdir
+    out = str_or_path(f"{tmpdir}/out.gz")
+    in1 = str_or_path(f"{tmpdir}/in1")
+    in2 = str_or_path(f"{tmpdir}/in2.bz2")
 
     with sh.open(out, "w") as fh:
         fh.write("1")
@@ -29,11 +29,11 @@ def test_concatenate_t1(tmpdir, newline):
 
 
 @pytest.mark.parametrize("newline", ["\n", "\r\n"])
-def test_concatenate_t2(tmpdir, newline):
+def test_concatenate_t2(str_or_path, tmpdir, newline):
     # Output file already exists and is non-empty. Files end with a newline.
-    out = "%s/out" % tmpdir
-    in1 = "%s/in1" % tmpdir
-    in2 = "%s/in2" % tmpdir
+    out = str_or_path(f"{tmpdir}/out")
+    in1 = str_or_path(f"{tmpdir}/in1")
+    in2 = str_or_path(f"{tmpdir}/in2")
 
     with sh.open(out, "w", newline=newline) as fh:
         fh.write("1\n")
@@ -51,11 +51,11 @@ def test_concatenate_t2(tmpdir, newline):
         assert fh.read() == b"2" + n + b"3" + n + b"4" + n
 
 
-def test_concatenate_t3(tmpdir):
+def test_concatenate_t3(str_or_path, tmpdir):
     # Output file already exists and it is empty
-    out = "%s/out" % tmpdir
-    in1 = "%s/in1" % tmpdir
-    in2 = "%s/in2" % tmpdir
+    out = str_or_path(f"{tmpdir}/out")
+    in1 = str_or_path(f"{tmpdir}/in1")
+    in2 = str_or_path(f"{tmpdir}/in2")
 
     with sh.open(out, "w") as fh:
         pass
@@ -72,11 +72,11 @@ def test_concatenate_t3(tmpdir):
         assert fh.read() == "2\n3\n"
 
 
-def test_concatenate_t4(tmpdir):
+def test_concatenate_t4(str_or_path, tmpdir):
     # Output file does not already exist
-    out = "%s/out" % tmpdir
-    in1 = "%s/in1" % tmpdir
-    in2 = "%s/in2" % tmpdir
+    out = str_or_path(f"{tmpdir}/out")
+    in1 = str_or_path(f"{tmpdir}/in1")
+    in2 = str_or_path(f"{tmpdir}/in2")
 
     with sh.open(in1, "w") as fh:
         fh.write("2")
@@ -91,11 +91,11 @@ def test_concatenate_t4(tmpdir):
         assert fh.read() == "2\n3\n"
 
 
-def test_concatenate_b(tmpdir):
+def test_concatenate_b(str_or_path, tmpdir):
     # Binary mode
-    out = "%s/out" % tmpdir
-    in1 = "%s/in1" % tmpdir
-    in2 = "%s/in2" % tmpdir
+    out = str_or_path(f"{tmpdir}/out")
+    in1 = str_or_path(f"{tmpdir}/in1")
+    in2 = str_or_path(f"{tmpdir}/in2")
 
     with sh.open(out, "wb") as fh:
         fh.write(b"1")
