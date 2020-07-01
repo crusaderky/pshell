@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.2.0:
 
-v1.2.0 (Unreleased)
+v1.2.0 (2020-07-01)
 -------------------
 
 Code changes
