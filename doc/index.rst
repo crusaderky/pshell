@@ -54,6 +54,7 @@ Index
 .. toctree::
 
    installing
+   develop
    whats-new
 
 

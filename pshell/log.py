@@ -1,17 +1,16 @@
 """Functions and global variables related to logging
 """
+from __future__ import annotations
+
 from contextvars import ContextVar
 from logging import Logger, getLogger
-from typing import Optional, Union
 
-_global_logger: Optional[Logger] = None
+_global_logger: Logger | None = None
 
-context_logger: ContextVar[Optional[Logger]] = ContextVar(
-    "context_logger", default=None
-)
+context_logger: ContextVar[Logger | None] = ContextVar("context_logger", default=None)
 
 
-def set_global_logger(logger: Union[Logger, str, None]) -> Optional[Logger]:
+def set_global_logger(logger: Logger | str | None) -> Logger | None:
     """Set the pshell global logger. This logger will be used by all pshell functions
     unless ``context_logger`` is defined.
 

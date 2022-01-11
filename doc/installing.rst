@@ -6,10 +6,8 @@ Installation
 Required dependencies
 ---------------------
 
-- Python 3.6 or later
-- `psutil <https://github.com/giampaolo/psutil>`_ 5.3 or later
-- Only on Python 3.6:
-  `contextvars backport <https://github.com/MagicStack/contextvars>`_ 2.0 or later
+- Python 3.7 or later
+- `psutil <https://github.com/giampaolo/psutil>`_ 5.4 or later
 
 Deployment
 ----------

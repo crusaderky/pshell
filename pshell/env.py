@@ -1,10 +1,13 @@
 """Functions related to environment variables
 """
+from __future__ import annotations
+
 import os
 import string
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Iterator, Union, overload
+from typing import IO, overload
 
 from . import log
 from .call import check_output
@@ -12,7 +15,7 @@ from .call import check_output
 __all__ = ("source", "putenv", "override_env", "resolve_env")
 
 
-def source(bash_file: Union[str, Path], *, stderr: IO = None) -> None:
+def source(bash_file: str | Path, *, stderr: IO | None = None) -> None:
     """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
     The acquired variables are injected into ``os.environment`` and are
@@ -48,7 +51,7 @@ def source(bash_file: Union[str, Path], *, stderr: IO = None) -> None:
             os.environ[key] = value
 
 
-def putenv(key: str, value: Union[str, Path, None]) -> None:
+def putenv(key: str, value: str | Path | None) -> None:
     """Set environment variable. The new variable will be visible to the
     current process and all subprocesses forked from it.
 
@@ -72,7 +75,7 @@ def putenv(key: str, value: Union[str, Path, None]) -> None:
 
 
 @contextmanager
-def override_env(key: str, value: Union[str, Path, None]) -> Iterator[None]:
+def override_env(key: str, value: str | Path | None) -> Iterator[None]:
     """Context manager that overrides an environment variable, returns control,
     and then restores it to its original value (or deletes it if it did not
     exist before).
@@ -134,4 +137,4 @@ def resolve_env(s):
     try:
         return type(s)(string.Template(str(s)).substitute(os.environ))
     except KeyError as e:
-        raise EnvironmentError(f"Environment variable {e} not found")
+        raise OSError(f"Environment variable {e} not found")

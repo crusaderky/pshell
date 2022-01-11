@@ -8,7 +8,7 @@ import time
 
 def _handler(signum, _frame):
     """Print the incoming signal, then do nothing."""
-    print("Receive signal {signum}".format(signum=signum))
+    print(f"Receive signal {signum}")
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
 
     for i in range(1, 20 + 1):
         time.sleep(1)
-        print("{pid}: count {i}".format(pid=pid, i=i))
+        print(f"{pid}: count {i}")
 
 
 if __name__ == "__main__":

@@ -1,23 +1,30 @@
 """Functions to open file descriptors
 """
+from __future__ import annotations
+
 import os.path
+from collections.abc import Callable
 from pathlib import Path
-from typing import IO, BinaryIO, Callable, Union
+from typing import IO, TYPE_CHECKING, BinaryIO
 
 from . import log
 from .env import resolve_env
+
+if TYPE_CHECKING:  # pragma: nocover
+    from typing_extensions import Literal
+
 
 __all__ = ("pshell_open",)
 
 
 # When importing in __init__, we're going to rename pshell_open to just open
 def pshell_open(
-    file: Union[str, Path, int, BinaryIO],
+    file: str | Path | int | BinaryIO,
     mode: str = "r",
     *,
-    encoding: str = None,
-    errors: str = None,
-    compression: Union[str, bool] = "auto",
+    encoding: str | None = None,
+    errors: str | None = None,
+    compression: Literal[False, "gzip", "bzip2", "lzma", "auto"] = "auto",
     **kwargs,
 ) -> IO:
     """Open a file handle to target file name or file descriptor.

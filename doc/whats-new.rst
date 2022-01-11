@@ -7,6 +7,10 @@ What's New
 
 v1.3.0 (unreleased)
 -------------------
+- Dropped support for Python 3.6
+- Added support for Python 3.9 and 3.10
+- Bumped minimum version of psutil from 5.3 to 5.4
+- Added pre-commit hooks
 
 
 .. _whats-new.1.2.0:

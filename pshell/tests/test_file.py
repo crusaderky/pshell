@@ -92,8 +92,7 @@ def test_remove_noperm(tmpdir):
 
 
 def test_ignore_readonly1(tmpdir):
-    """Test the ignore_readonly=True flag
-    """
+    """Test the ignore_readonly=True flag"""
     os.makedirs(f"{tmpdir}/foo/bar/baz")
     os.chmod(f"{tmpdir}/foo/bar/baz", 0o500)
     os.chmod(f"{tmpdir}/foo/bar", 0o500)
