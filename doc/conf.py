@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 #
 # documentation build configuration file, created by
 # sphinx-quickstart on Thu Feb  6 18:57:54 2014.
@@ -16,8 +16,6 @@ import os
 import sys
 
 import pshell
-
-allowed_failures = set()
 
 print("python exec:", sys.executable)
 print("sys.path:", sys.path)
