@@ -5,14 +5,14 @@ Install
 -------
 
 1. Clone this repository with git:
+   .. code-block:: bash
 
-.. code-block:: bash
-
-     git clone git@github.com:crusaderky/pshell/pshell.git
-     cd pshell
+      git clone git@github.com:crusaderky/pshell.git
+      cd pshell
 
 2. Install Python (OS-dependent)
-3. .. code-block:: bash
+3.
+   .. code-block:: bash
    
       pip install -r requirements.txt
 
@@ -21,8 +21,6 @@ To keep a fork in sync with the upstream source:
 .. code-block:: bash
 
    cd pshell
-   git remote add upstream git@github.com:crusaderky/pshell/pshell.git
-   git remote -v
    git fetch -a upstream
    git checkout main
    git pull upstream main

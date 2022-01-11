@@ -31,5 +31,3 @@ repos:
           - types-pkg_resources
           - types-setuptools
           - types-psutil
-          # Libraries exclusively imported under `if TYPE_CHECKING:`
-          - typing_extensions  # To be reviewed after dropping Python 3.7
