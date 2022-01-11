@@ -1,8 +1,11 @@
 """Search and file system traversal functions
 """
+from __future__ import annotations
+
 import glob as _glob
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, List, Optional, Union, overload
+from typing import overload
 
 from . import log
 from .env import resolve_env
@@ -14,7 +17,7 @@ class FileMatchError(Exception):
     """:func:`glob` or :func:`iglob` returned not enough or too many matches"""
 
     @property
-    def pathname(self) -> Union[str, Path]:
+    def pathname(self) -> str | Path:
         return self.args[0]
 
     @property
@@ -22,7 +25,7 @@ class FileMatchError(Exception):
         return self.args[1]
 
     @property
-    def max_results(self) -> Optional[int]:
+    def max_results(self) -> int | None:
         return self.args[2]
 
     @property
@@ -53,14 +56,16 @@ class FileMatchError(Exception):
 
 
 @overload
-def glob(pathname: str, *, min_results: int = 0, max_results: int = None) -> List[str]:
+def glob(
+    pathname: str, *, min_results: int = 0, max_results: int | None = None
+) -> list[str]:
     ...  # pragma: nocover
 
 
 @overload
 def glob(
-    pathname: Path, *, min_results: int = 0, max_results: int = None
-) -> List[Path]:
+    pathname: Path, *, min_results: int = 0, max_results: int | None = None
+) -> list[Path]:
     ...  # pragma: nocover
 
 
@@ -98,14 +103,14 @@ def glob(pathname, *, min_results=0, max_results=None):
 
 @overload
 def iglob(
-    pathname: str, *, min_results: int = 0, max_results: int = None
+    pathname: str, *, min_results: int = 0, max_results: int | None = None
 ) -> Iterator[str]:
     ...  # pragma: nocover
 
 
 @overload
 def iglob(
-    pathname: Path, *, min_results: int = 0, max_results: int = None
+    pathname: Path, *, min_results: int = 0, max_results: int | None = None
 ) -> Iterator[Path]:
     ...  # pragma: nocover
 

@@ -1,10 +1,12 @@
 """Utilities to manage running processes
 """
+from __future__ import annotations
+
 import getpass
 import os
 import time
+from collections.abc import Collection
 from pathlib import Path
-from typing import Collection, List, Union
 
 import psutil
 
@@ -14,7 +16,7 @@ from .env import resolve_env
 __all__ = ("find_procs_by_cmdline", "kill")
 
 
-def find_procs_by_cmdline(*cmdlines: Union[str, Path]) -> List[psutil.Process]:
+def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
     """Search all processes that have a partial match for at least one of the
     given command lines. Command lines are parsed through :func:`resolve_env`.
 
@@ -81,9 +83,7 @@ def find_procs_by_cmdline(*cmdlines: Union[str, Path]) -> List[psutil.Process]:
     return procs
 
 
-def kill(
-    *procs: Union[int, psutil.Process], term_timeout: Union[int, float] = 10
-) -> None:
+def kill(*procs: int | psutil.Process, term_timeout: float = 10) -> None:
     """Send SIGTERM to one or more processes. After ``term_timeout`` seconds,
     send SIGKILL to the surviving processes.
 
@@ -102,7 +102,7 @@ def kill(
         If ``term_timeout==0``, immediately send SIGKILL.
     """
     # Strip list from current process and its parents
-    psutil_procs: List[psutil.Process] = []
+    psutil_procs: list[psutil.Process] = []
     my_pid = os.getpid()
     for proc in procs:
         # Convert any int PIDs to psutil.Process
@@ -179,7 +179,7 @@ def kill(
     log.info("All processes terminated")
 
 
-def killall(*cmdlines: Union[str, Path], term_timeout: Union[int, float] = 10) -> None:
+def killall(*cmdlines: str | Path, term_timeout: float = 10) -> None:
     """Find all processes with the target command line(s), send SIGTERM, and
     then send SIGKILL to the survivors.
 
@@ -189,11 +189,11 @@ def killall(*cmdlines: Union[str, Path], term_timeout: Union[int, float] = 10) -
 
 
 def wait_for_server(
-    proc: Union[int, psutil.Process],
-    port: int = None,
+    proc: int | psutil.Process,
+    port: int | None = None,
     *,
-    ignore_ports: Collection[int] = None,
-    timeout: Union[int, float] = None,
+    ignore_ports: Collection[int] | None = None,
+    timeout: float | None = None,
 ) -> int:
     """Wait until either the process starts listening on the given port, or
     it crashes because the port is occupied by something else.

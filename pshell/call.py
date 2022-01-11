@@ -1,11 +1,13 @@
 """Functions to execute shell commands in a subprocess
 """
+from __future__ import annotations
+
 import io
 import os
 import subprocess
 import threading
 from contextlib import contextmanager
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO
 
 from . import log
 
@@ -18,7 +20,7 @@ Set errexit, pipefail, and nounset.
 
 
 @contextmanager
-def real_fh(fh: Optional[IO]):
+def real_fh(fh: IO | None):
     """The :mod:`io` module offers file-like objects which can be used to spoof
     a file handle. Among other things, they are extensively used by nosetests
     and py.test to capture stdout/stderr.
@@ -114,8 +116,8 @@ def real_fh(fh: Optional[IO]):
 
 
 def _call_cmd(
-    cmd: Union[str, List[str]], obfuscate_pwd: Optional[str], shell: bool
-) -> Tuple[Union[str, List[str]], bool]:
+    cmd: str | list[str], obfuscate_pwd: str | None, shell: bool
+) -> tuple[str | list[str], bool]:
     """Common internal helper of check_call, call, and check_output
     that pre-processes the command to be executed
     """
@@ -140,14 +142,14 @@ def _call_cmd(
 
 
 def call(
-    cmd: Union[str, List[str]],
+    cmd: str | list[str],
     *,
-    stdout: IO = None,
-    stdin: IO = None,
-    stderr: IO = None,
-    obfuscate_pwd: str = None,
+    stdout: IO | None = None,
+    stdin: IO | None = None,
+    stderr: IO | None = None,
+    obfuscate_pwd: str | None = None,
     shell: bool = True,
-    timeout: Union[int, float] = None,
+    timeout: float | None = None,
 ) -> int:
     """Run another program in a subprocess and wait for it to terminate.
 
@@ -200,14 +202,14 @@ def call(
 
 
 def check_call(
-    cmd: Union[str, List[str]],
+    cmd: str | list[str],
     *,
-    stdout: IO = None,
-    stdin: IO = None,
-    stderr: IO = None,
-    obfuscate_pwd: str = None,
+    stdout: IO | None = None,
+    stdin: IO | None = None,
+    stderr: IO | None = None,
+    obfuscate_pwd: str | None = None,
     shell: bool = True,
-    timeout: Union[int, float] = None,
+    timeout: float | None = None,
 ) -> None:
     """Run another program in a subprocess and wait for it to terminate; raise
     exception in case of non-zero exit code.
@@ -232,13 +234,13 @@ def check_call(
 
 
 def check_output(
-    cmd: Union[str, List[str]],
+    cmd: str | list[str],
     *,
-    stdin: IO = None,
-    stderr: IO = None,
-    obfuscate_pwd: str = None,
+    stdin: IO | None = None,
+    stderr: IO | None = None,
+    obfuscate_pwd: str | None = None,
     shell: bool = True,
-    timeout: Union[int, float] = None,
+    timeout: float | None = None,
     decode: bool = True,
     encoding: str = "utf-8",
     errors: str = "replace",

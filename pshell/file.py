@@ -1,13 +1,16 @@
 """Functions for handling files and directories
 """
+from __future__ import annotations
+
 import datetime
 import errno
 import os
 import shutil
 import stat
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Optional, Union, overload
+from typing import overload
 
 from . import log
 from .env import resolve_env
@@ -26,8 +29,6 @@ __all__ = (
     "owner",
 )
 
-PathLike = Union[str, Path]
-
 
 def _unix_only() -> None:
     """Crash if running on Windows"""
@@ -36,7 +37,7 @@ def _unix_only() -> None:
 
 
 def remove(
-    path: PathLike,
+    path: str | Path,
     *,
     recursive: bool = False,
     force: bool = True,
@@ -124,7 +125,7 @@ def remove(
             raise
 
 
-def chdir(path: PathLike) -> None:
+def chdir(path: str | Path) -> None:
     """Move the present-working directory (pwd) into the target directory."""
     path = Path(path)
     log.info("chdir %s", path)
@@ -132,7 +133,7 @@ def chdir(path: PathLike) -> None:
 
 
 @contextmanager
-def pushd(path: PathLike) -> Iterator[None]:
+def pushd(path: str | Path) -> Iterator[None]:
     """Context manager that moves the pwd into target directory. When leaving
     the context, the pwd is changed back to what it originally was.
 
@@ -158,7 +159,7 @@ def pushd(path: PathLike) -> Iterator[None]:
         os.chdir(cwd)
 
 
-def move(src: PathLike, dst: PathLike) -> None:
+def move(src: str | Path, dst: str | Path) -> None:
     """Recursively move a file or directory (src) to another location (dst).
     If the destination is a directory or a symlink to a directory, then src is
     moved inside that directory. The destination directory must not already
@@ -169,7 +170,7 @@ def move(src: PathLike, dst: PathLike) -> None:
     shutil.move(resolve_env(str(src)), resolve_env(str(dst)))
 
 
-def copy(src: PathLike, dst: PathLike, *, ignore=None) -> None:
+def copy(src: str | Path, dst: str | Path, *, ignore=None) -> None:
     """Recursively copy a file or directory. If src is a regular file and dst
     is a directory, a file with the same basename as src is created (or
     overwritten) in the directory specified. Permission bits and last modified
@@ -212,15 +213,15 @@ def copy(src: PathLike, dst: PathLike, *, ignore=None) -> None:
 
 @overload
 def backup(
-    path: str, *, suffix: str = None, force: bool = False, action: str = "copy"
-) -> Optional[str]:
+    path: str, *, suffix: str | None = None, force: bool = False, action: str = "copy"
+) -> str | None:
     ...  # pragma: nocover
 
 
 @overload
 def backup(
-    path: Path, *, suffix: str = None, force: bool = False, action: str = "copy"
-) -> Optional[Path]:
+    path: Path, *, suffix: str | None = None, force: bool = False, action: str = "copy"
+) -> Path | None:
     ...  # pragma: nocover
 
 
@@ -271,7 +272,7 @@ def backup(path, *, suffix=None, force=False, action="copy"):
 
 
 def symlink(
-    src: PathLike, dst: PathLike, *, force: bool = False, abspath: bool = False
+    src: str | Path, dst: str | Path, *, force: bool = False, abspath: bool = False
 ) -> None:
     """Create a symbolic link pointing to src named dst.
 
@@ -329,7 +330,7 @@ def symlink(
             os.chdir(cwd_backup)
 
 
-def exists(path: PathLike) -> bool:
+def exists(path: str | Path) -> bool:
     """Wrapper around :func:`os.path.exists`, with automated resolution of
     environment variables and logging.
     """
@@ -341,7 +342,7 @@ def exists(path: PathLike) -> bool:
     return False
 
 
-def lexists(path: PathLike) -> bool:
+def lexists(path: str | Path) -> bool:
     """Wrapper around :func:`os.path.lexists`, with automated resolution of
     environment variables and logging.
     """
@@ -353,7 +354,7 @@ def lexists(path: PathLike) -> bool:
     return False
 
 
-def mkdir(path: PathLike, *, parents: bool = True, force: bool = True) -> None:
+def mkdir(path: str | Path, *, parents: bool = True, force: bool = True) -> None:
     """Create target directory.
 
     This function is safe for use in concurrent environments, where multiple
@@ -383,7 +384,7 @@ def mkdir(path: PathLike, *, parents: bool = True, force: bool = True) -> None:
             raise
 
 
-def owner(fname: PathLike) -> str:
+def owner(fname: str | Path) -> str:
     """Return the username of the user owning a file.
 
     This function is not available on Windows.

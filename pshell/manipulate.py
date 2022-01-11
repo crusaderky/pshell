@@ -1,18 +1,21 @@
 """Functions for manipulating files
 """
+from __future__ import annotations
+
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, Union
 
 from . import log
 from .open import pshell_open
 
 __all__ = ("concatenate",)
 
-PathLike = Union[str, Path]
-
 
 def concatenate(
-    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str = "w", **kwargs
+    input_fnames: Sequence[str | Path],
+    output_fname: str | Path,
+    mode: str = "w",
+    **kwargs,
 ) -> None:
     """Concatenate files. Python equivalent of
     :command:`cat input_fnames[0] input_fnames[1] ... > output_fname`.
@@ -46,7 +49,7 @@ def concatenate(
 
 
 def _concatenate_binary(
-    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
+    input_fnames: Sequence[str | Path], output_fname: str | Path, mode: str, **kwargs
 ) -> None:
     """Implementation of concatenate for binary files"""
     with pshell_open(output_fname, mode, **kwargs) as ofh:
@@ -57,7 +60,7 @@ def _concatenate_binary(
 
 
 def _concatenate_text(
-    input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
+    input_fnames: Sequence[str | Path], output_fname: str | Path, mode: str, **kwargs
 ) -> None:
     """Implementation of concatenate for text files"""
     prepend_newline = False
