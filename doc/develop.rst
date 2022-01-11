@@ -11,8 +11,7 @@ Install
       cd pshell
 
 2. Install Python (OS-dependent)
-3.
-   .. code-block:: bash
+3. .. code-block:: bash
    
       pip install -r requirements.txt
 

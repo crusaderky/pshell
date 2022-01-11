@@ -10,7 +10,7 @@ from typing import IO, TYPE_CHECKING, BinaryIO
 from . import log
 from .env import resolve_env
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: nocover
     from typing_extensions import Literal
 
 
