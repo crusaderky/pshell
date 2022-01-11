@@ -39,7 +39,7 @@ def get_other_users_proc():
                 return proc
         except psutil.AccessDenied:  # pragma: nocover
             continue
-    raise EnvironmentError(
+    raise OSError(
         "All processes belong to the current user"
     )  # pragma: nocover
 

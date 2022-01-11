@@ -33,7 +33,7 @@ def _unix_only() -> None:
     """Crash if running on Windows
     """
     if os.name == "nt":
-        raise EnvironmentError("Not supported on Windows")
+        raise OSError("Not supported on Windows")
 
 
 def remove(
