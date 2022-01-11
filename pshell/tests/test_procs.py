@@ -15,8 +15,7 @@ from . import DATADIR
 
 
 def spawn_test_proc():
-    """Start a long-running process
-    """
+    """Start a long-running process"""
     if os.name == "nt":
         cmd = [os.path.join(DATADIR, "sleep20.bat")]
     else:
@@ -39,14 +38,11 @@ def get_other_users_proc():
                 return proc
         except psutil.AccessDenied:  # pragma: nocover
             continue
-    raise OSError(
-        "All processes belong to the current user"
-    )  # pragma: nocover
+    raise OSError("All processes belong to the current user")  # pragma: nocover
 
 
 def test_find_kill_procs(str_or_path):
-    """Test pshell.find_procs_by_cmdline and pshell.kill
-    """
+    """Test pshell.find_procs_by_cmdline and pshell.kill"""
     os.environ["TEST_DATADIR"] = DATADIR
 
     assert sh.find_procs_by_cmdline("this won't match anything") == []
@@ -175,7 +171,7 @@ def test_sigkill_sigterm_ignore(kwargs, min_elapsed, max_elapsed):
 
 
 class ListenProcess(multiprocessing.Process):
-    """"Context manager that starts a subprocess that listens on one or more ports.
+    """Context manager that starts a subprocess that listens on one or more ports.
     If sleep is set, it waits <sleep> seconds before listening on each port.
 
     e.g.::

@@ -30,8 +30,7 @@ PathLike = Union[str, Path]
 
 
 def _unix_only() -> None:
-    """Crash if running on Windows
-    """
+    """Crash if running on Windows"""
     if os.name == "nt":
         raise OSError("Not supported on Windows")
 
@@ -126,8 +125,7 @@ def remove(
 
 
 def chdir(path: PathLike) -> None:
-    """Move the present-working directory (pwd) into the target directory.
-    """
+    """Move the present-working directory (pwd) into the target directory."""
     path = Path(path)
     log.info("chdir %s", path)
     os.chdir(resolve_env(path))

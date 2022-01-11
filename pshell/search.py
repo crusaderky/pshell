@@ -11,8 +11,7 @@ __all__ = ("FileMatchError", "glob", "iglob")
 
 
 class FileMatchError(Exception):
-    """:func:`glob` or :func:`iglob` returned not enough or too many matches
-    """
+    """:func:`glob` or :func:`iglob` returned not enough or too many matches"""
 
     @property
     def pathname(self) -> Union[str, Path]:

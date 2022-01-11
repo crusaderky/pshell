@@ -48,8 +48,7 @@ def concatenate(
 def _concatenate_binary(
     input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
 ) -> None:
-    """Implementation of concatenate for binary files
-    """
+    """Implementation of concatenate for binary files"""
     with pshell_open(output_fname, mode, **kwargs) as ofh:
         for fname in input_fnames:
             with pshell_open(fname, "rb", **kwargs) as ifh:
@@ -60,8 +59,7 @@ def _concatenate_binary(
 def _concatenate_text(
     input_fnames: Sequence[PathLike], output_fname: PathLike, mode: str, **kwargs
 ) -> None:
-    """Implementation of concatenate for text files
-    """
+    """Implementation of concatenate for text files"""
     prepend_newline = False
     if "a" in mode:
         # Check if the last line of the first file ends with a \n
