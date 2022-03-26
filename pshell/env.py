@@ -9,8 +9,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, overload
 
-from . import log
-from .call import check_output
+from pshell import log
+from pshell.call import check_output
 
 __all__ = ("source", "putenv", "override_env", "resolve_env")
 

@@ -5,14 +5,10 @@ from __future__ import annotations
 import os.path
 from collections.abc import Callable
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, BinaryIO
+from typing import IO, BinaryIO, Literal
 
-from . import log
-from .env import resolve_env
-
-if TYPE_CHECKING:  # pragma: nocover
-    from typing_extensions import Literal
-
+from pshell import log
+from pshell.env import resolve_env
 
 __all__ = ("pshell_open",)
 

@@ -3,8 +3,7 @@ import os
 import pytest
 
 import pshell as sh
-
-from . import DATADIR, StubError, unix_only
+from pshell.tests import DATADIR, StubError, unix_only
 
 
 @unix_only

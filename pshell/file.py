@@ -12,8 +12,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import overload
 
-from . import log
-from .env import resolve_env
+from pshell import log
+from pshell.env import resolve_env
 
 __all__ = (
     "remove",

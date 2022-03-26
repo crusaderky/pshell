@@ -10,8 +10,7 @@ import psutil
 import pytest
 
 import pshell as sh
-
-from . import DATADIR
+from pshell.tests import DATADIR
 
 
 def spawn_test_proc():

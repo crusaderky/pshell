@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from . import log
-from .open import pshell_open
+from pshell import log
+from pshell.open import pshell_open
 
 __all__ = ("concatenate",)
 

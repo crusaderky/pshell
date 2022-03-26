@@ -9,7 +9,7 @@ import threading
 from contextlib import contextmanager
 from typing import IO
 
-from . import log
+from pshell import log
 
 __all__ = ("real_fh", "call", "check_call", "check_output")
 
