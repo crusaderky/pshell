@@ -7,8 +7,7 @@ import time
 import pytest
 
 import pshell as sh
-
-from . import DATADIR, StubError, unix_only, windows_only
+from pshell.tests import DATADIR, StubError, unix_only, windows_only
 
 if os.name == "nt":
     HELLO_CMD = [os.path.join(DATADIR, "hello.bat")]
@@ -80,7 +79,7 @@ def test_real_fh_fullpipe():
     # in an attempt to trigger a deadlock if the pipe isn't
     # continuously flushed.
     fh = io.StringIO()
-    payload = "x" * int(2 ** 20)  # 1MB payload
+    payload = "x" * int(2**20)  # 1MB payload
     with sh.real_fh(fh) as rfh:
         rfh.write(payload)
     assert fh.getvalue() == payload

@@ -6,8 +6,7 @@ import subprocess
 import pytest
 
 import pshell as sh
-
-from . import StubError, unix_only
+from pshell.tests import StubError, unix_only
 
 
 def test_remove(str_or_path, tmpdir):

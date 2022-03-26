@@ -10,8 +10,8 @@ from pathlib import Path
 
 import psutil
 
-from . import log
-from .env import resolve_env
+from pshell import log
+from pshell.env import resolve_env
 
 __all__ = ("find_procs_by_cmdline", "kill")
 
