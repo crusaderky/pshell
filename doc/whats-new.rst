@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.3.0:
 
-v1.3.0 (unreleased)
+v1.3.0 (2022-03-26)
 -------------------
 - Dropped support for Python 3.6 and 3.7
 - Added support for Python 3.9 and 3.10
