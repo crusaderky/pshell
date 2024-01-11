@@ -238,13 +238,13 @@ def test_backup(str_or_path, tmpdir):
     # Manual extension
     new_fname = sh.backup(fname_env, suffix="bak", action="copy")
     assert os.path.exists(f"{tmpdir}/test.bak")
-    assert str(new_fname) == "$UNITTEST_BASH/test.bak"
+    assert str(new_fname) == str(str_or_path("$UNITTEST_BASH/test.bak"))
     assert isinstance(new_fname, str_or_path)
 
     # Collisions in the backup name will generate a unique new name
     new_fname = sh.backup(fname_env, suffix="bak", action="copy")
     assert os.path.exists(f"{tmpdir}/test.bak.2")
-    assert str(new_fname) == "$UNITTEST_BASH/test.bak.2"
+    assert str(new_fname) == str(str_or_path("$UNITTEST_BASH/test.bak.2"))
     assert isinstance(new_fname, str_or_path)
 
     # action='move'
