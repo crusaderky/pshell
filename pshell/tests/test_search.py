@@ -42,31 +42,22 @@ def test_glob_iglob(str_or_path, tmpdir):
     # glob exceptions
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=4)
-    assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results; expected at least 4"
-    )
+    f = str_or_path("$UNITTEST_BASH/test*.txt")
+    assert str(e.value) == f"File match '{f}' produced 3 results; expected at least 4"
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), max_results=2)
-    assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results; expected up to 2"
-    )
+    assert str(e.value) == f"File match '{f}' produced 3 results; expected up to 2"
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=1, max_results=2)
     assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results; expected between 1 and 2"
+        str(e.value) == f"File match '{f}' produced 3 results; expected between 1 and 2"
     )
 
     with pytest.raises(sh.FileMatchError) as e:
         sh.glob(str_or_path("$UNITTEST_BASH/test*.txt"), min_results=2, max_results=2)
-    assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced "
-        "3 results; expected exactly 2"
-    )
+    assert str(e.value) == f"File match '{f}' produced 3 results; expected exactly 2"
 
     # iglob exceptions
     it = sh.iglob(str_or_path("$UNITTEST_BASH/test*.txt"), max_results=1)
@@ -75,17 +66,15 @@ def test_glob_iglob(str_or_path, tmpdir):
     with pytest.raises(sh.FileMatchError) as e:
         next(it)
     assert (
-        str(e.value) == "File match '$UNITTEST_BASH/test*.txt' produced at least 2 "
-        "results; expected up to 1"
+        str(e.value)
+        == f"File match '{f}' produced at least 2 results; expected up to 1"
     )
 
     it = sh.iglob(str_or_path("$UNITTEST_BASH/notfound"), min_results=1)
     with pytest.raises(sh.FileMatchError) as e:
         next(it)
-    assert (
-        str(e.value) == "File match '$UNITTEST_BASH/notfound' produced 0 results; "
-        "expected at least 1"
-    )
+    f = str_or_path("$UNITTEST_BASH", "test*.txt")
+    assert str(e.value) == f"File match '{f}' produced 0 results; expected at least 1"
 
 
 def test_glob_iglob_recursive(tmpdir):
