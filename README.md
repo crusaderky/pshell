@@ -4,7 +4,7 @@ pshell: get rid of all bash scripts
 [![lint-badge](https://github.com/crusaderky/pshell/workflows/Lint/badge.svg)](https://github.com/crusaderky/pshell/actions)
 [![pytest-badge](https://github.com/crusaderky/pshell/workflows/Test%20latest/badge.svg)](https://github.com/crusaderky/pshell/actions)
 [![pytest-minimal-badge](https://github.com/crusaderky/pshell/workflows/Test%20minimal/badge.svg)](https://github.com/crusaderky/pshell/actions)
-[![codecov-badge](https://codecov.io/gh/crusaderky/pshell/branch/master/graph/badge.svg)](https://codecov.io/gh/crusaderky/pshell/branch/master)
+[![codecov-badge](https://codecov.io/gh/crusaderky/pshell/branch/main/graph/badge.svg)](https://codecov.io/gh/crusaderky/pshell/branch/main)
 
 
 Python API to completely replace bash scripting

@@ -5,6 +5,7 @@ Install
 -------
 
 1. Clone this repository with git:
+
    .. code-block:: bash
 
       git clone git@github.com:crusaderky/pshell.git

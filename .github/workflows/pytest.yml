@@ -2,9 +2,13 @@ name: Test latest
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
     branches: ['*']
+
+defaults:
+  run:
+    shell: bash -l {0}
 
 jobs:
   build:
@@ -13,26 +17,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos, windows]
-        python-version: ["3.8", "3.9", "3.10"]
+        os: [ubuntu]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        include:
+          - os: macos
+            python-version: "3.8"
+          - os: macos
+            python-version: "3.12"
+          - os: windows
+            python-version: "3.8"
+          - os: windows
+            python-version: "3.12"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install
-        run: |
-          python -m pip install coverage pytest .
+        run: python -m pip install pytest pytest-cov .
 
       - name: pytest
-        run: |
-          coverage run -m pytest -v
-          coverage xml
+        run: py.test --verbose --cov=pshell --cov-report=xml
 
       - name: codecov.io
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3

@@ -7,6 +7,7 @@ What's New
 
 v1.4.0 (unreleased)
 -------------------
+- Added formal support for Python 3.11 and 3.12 (the previous version works fine though)
 
 
 .. _whats-new.1.3.0:
