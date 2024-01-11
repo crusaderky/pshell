@@ -2,21 +2,25 @@ name: Documentation
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
     branches: ['*']
+
+defaults:
+  run:
+    shell: bash -l {0}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
 
       - name: Install
         run: |
@@ -26,7 +30,7 @@ jobs:
       - name: Build docs
         run: sphinx-build -n -j auto -b html -d build/doctrees doc build/html
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: pshell-docs
           path: build/html

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-#
 # documentation build configuration file, created by
 # sphinx-quickstart on Thu Feb  6 18:57:54 2014.
 #
@@ -20,6 +19,8 @@ import pshell
 
 print("python exec:", sys.executable)
 print("sys.path:", sys.path)
+print("pshell version: ", pshell.__version__)
+
 
 # -- General configuration ------------------------------------------------
 
@@ -117,9 +118,7 @@ html_theme = "sphinx_rtd_theme"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {
-    "logo_only": True,
-}
+html_theme_options = {"logo_only": True}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
