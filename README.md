@@ -1,9 +1,9 @@
 pshell: get rid of all bash scripts
 ===================================
-[![doc-badge](https://github.com/crusaderky/pshell/workflows/Documentation/badge.svg)](https://github.com/crusaderky/pshell/actions)
-[![lint-badge](https://github.com/crusaderky/pshell/workflows/Lint/badge.svg)](https://github.com/crusaderky/pshell/actions)
-[![pytest-badge](https://github.com/crusaderky/pshell/workflows/Test%20latest/badge.svg)](https://github.com/crusaderky/pshell/actions)
-[![pytest-minimal-badge](https://github.com/crusaderky/pshell/workflows/Test%20minimal/badge.svg)](https://github.com/crusaderky/pshell/actions)
+[![doc-badge](https://github.com/crusaderky/pshell/actions/workflows/docs.yml/badge.svg)](https://github.com/crusaderky/pshell/actions)
+[![pre-commit-badge](https://github.com/crusaderky/pshell/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/crusaderky/pshell/actions)
+[![pytest-badge](https://github.com/crusaderky/pshell/actions/workflows/pytest.yml/badge.svg)](https://github.com/crusaderky/pshell/actions)
+[![pytest-minimal-badge](https://github.com/crusaderky/pshell/actions/workflows/pytest-minimal.yml/badge.svg)](https://github.com/crusaderky/pshell/actions)
 [![codecov-badge](https://codecov.io/gh/crusaderky/pshell/branch/main/graph/badge.svg)](https://codecov.io/gh/crusaderky/pshell/branch/main)
 
 
