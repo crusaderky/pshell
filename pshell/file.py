@@ -33,7 +33,7 @@ __all__ = (
 def _unix_only() -> None:
     """Crash if running on Windows"""
     if os.name == "nt":
-        raise OSError("Not supported on Windows")
+        raise OSError("Not supported on Windows")  # pragma: nocover
 
 
 def remove(
@@ -89,7 +89,7 @@ def remove(
                         # chmod u+w
                         mode = os.stat(path).st_mode
                         os.chmod(path, mode | stat.S_IWUSR)
-                    except OSError:
+                    except OSError:  # pragma: nocover
                         pass
 
                 shutil.rmtree(realpath, onerror=onerror)
