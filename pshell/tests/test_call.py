@@ -60,7 +60,7 @@ def test_real_fh_crash():
     assert fh.getvalue() == "Hello world"
 
 
-@pytest.mark.skip("no way of testing this with pytest")
+@pytest.mark.skip(reason="no way of testing this with pytest")
 def test_real_fh_nosetests():  # pragma: nocover
     # sys.stdout and sys.stderr have been monkey-patched by nosetests
     # with a custom class (not io.StringIO!)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import os.path
 from collections.abc import Callable
 from pathlib import Path
-from typing import IO, BinaryIO, Literal
+from typing import IO, Any, BinaryIO, Literal
 
 from pshell import log
 from pshell.env import resolve_env
@@ -21,7 +21,7 @@ def pshell_open(
     encoding: str | None = None,
     errors: str | None = None,
     compression: Literal[False, "gzip", "bzip2", "lzma", "auto"] = "auto",
-    **kwargs,
+    **kwargs: Any,
 ) -> IO:
     """Open a file handle to target file name or file descriptor.
 

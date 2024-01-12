@@ -7,7 +7,7 @@ import os
 import subprocess
 import threading
 from contextlib import contextmanager
-from typing import IO
+from typing import IO, Any, Literal, overload
 
 from pshell import log
 
@@ -20,7 +20,7 @@ Set errexit, pipefail, and nounset.
 
 
 @contextmanager
-def real_fh(fh: IO | None):
+def real_fh(fh: IO | None) -> Any:
     """The :mod:`io` module offers file-like objects which can be used to spoof
     a file handle. Among other things, they are extensively used by nosetests
     and py.test to capture stdout/stderr.
@@ -93,7 +93,7 @@ def real_fh(fh: IO | None):
     # side, the write will lock indefinitely, resulting in a deadlock.
     # It's very easy to exceed this limit, e.g. when calling sh.check_call().
     # Use a thread to continuously move data beetween file handles.
-    def flush():
+    def flush() -> None:
         while True:
             data = real_fh_in.read(4096)
             if not data:
@@ -233,6 +233,38 @@ def check_call(
         )
 
 
+@overload
+def check_output(
+    cmd: str | list[str],
+    *,
+    stdin: IO | None = None,
+    stderr: IO | None = None,
+    obfuscate_pwd: str | None = None,
+    shell: bool = True,
+    timeout: float | None = None,
+    decode: Literal[True] = True,
+    encoding: str = "utf-8",
+    errors: str = "replace",
+) -> str:
+    ...
+
+
+@overload
+def check_output(
+    cmd: str | list[str],
+    *,
+    stdin: IO | None = None,
+    stderr: IO | None = None,
+    obfuscate_pwd: str | None = None,
+    shell: bool = True,
+    timeout: float | None = None,
+    decode: Literal[False],
+    encoding: str = "utf-8",
+    errors: str = "replace",
+) -> bytes:
+    ...
+
+
 def check_output(
     cmd: str | list[str],
     *,
@@ -244,7 +276,7 @@ def check_output(
     decode: bool = True,
     encoding: str = "utf-8",
     errors: str = "replace",
-):
+) -> str | bytes:
     """Run another program in a subprocess and wait for it to terminate; return
     its stdout. Raise exception in case of non-zero exit code.
 

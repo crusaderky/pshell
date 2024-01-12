@@ -83,7 +83,7 @@ def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
     return procs
 
 
-def kill(*procs: int | psutil.Process, term_timeout: float = 10) -> None:
+def kill(*procs: int | psutil.Process | None, term_timeout: float = 10) -> None:
     """Send SIGTERM to one or more processes. After ``term_timeout`` seconds,
     send SIGKILL to the surviving processes.
 
@@ -113,8 +113,7 @@ def kill(*procs: int | psutil.Process, term_timeout: float = 10) -> None:
                 log.debug(f"PID {proc} does not exist")
                 continue
         elif proc is None:
-            # Silently skip - useful as e.g. psutil.Process.parent() can
-            # return None
+            # Silently skip - useful as e.g. psutil.Process.parent() can return None
             continue
         elif not isinstance(proc, psutil.Process):
             raise TypeError(f"Expected int or psutil.Process; got {type(proc)}")

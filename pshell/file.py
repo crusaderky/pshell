@@ -7,10 +7,10 @@ import errno
 import os
 import shutil
 import stat
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import overload
+from typing import Literal, overload
 
 from pshell import log
 from pshell.env import resolve_env
@@ -33,7 +33,7 @@ __all__ = (
 def _unix_only() -> None:
     """Crash if running on Windows"""
     if os.name == "nt":
-        raise OSError("Not supported on Windows")
+        raise OSError("Not supported on Windows")  # pragma: nocover
 
 
 def remove(
@@ -43,7 +43,7 @@ def remove(
     force: bool = True,
     ignore_readonly: bool = False,
     rename_on_fail: bool = False,
-):
+) -> None:
     """Remove file or directory
 
     :param path:
@@ -80,7 +80,7 @@ def remove(
                 # something do chmod u+w on the failed path and continue
                 has_errors = False
 
-                def onerror(function, path, excinfo):
+                def onerror(function: object, path: str, excinfo: object) -> None:
                     # Do not act only on PermissionError.
                     # It could also be OSError('Directory not empty').
                     nonlocal has_errors
@@ -89,7 +89,7 @@ def remove(
                         # chmod u+w
                         mode = os.stat(path).st_mode
                         os.chmod(path, mode | stat.S_IWUSR)
-                    except OSError:
+                    except OSError:  # pragma: nocover
                         pass
 
                 shutil.rmtree(realpath, onerror=onerror)
@@ -170,7 +170,7 @@ def move(src: str | Path, dst: str | Path) -> None:
     shutil.move(resolve_env(str(src)), resolve_env(str(dst)))
 
 
-def copy(src: str | Path, dst: str | Path, *, ignore=None) -> None:
+def copy(src: str | Path, dst: str | Path, *, ignore: Callable | None = None) -> None:
     """Recursively copy a file or directory. If src is a regular file and dst
     is a directory, a file with the same basename as src is created (or
     overwritten) in the directory specified. Permission bits and last modified
@@ -213,19 +213,33 @@ def copy(src: str | Path, dst: str | Path, *, ignore=None) -> None:
 
 @overload
 def backup(
-    path: str, *, suffix: str | None = None, force: bool = False, action: str = "copy"
+    path: str,
+    *,
+    suffix: str | None = None,
+    force: bool = False,
+    action: Literal["copy", "move"] = "copy",
 ) -> str | None:
-    ...  # pragma: nocover
+    ...
 
 
 @overload
 def backup(
-    path: Path, *, suffix: str | None = None, force: bool = False, action: str = "copy"
+    path: Path,
+    *,
+    suffix: str | None = None,
+    force: bool = False,
+    action: Literal["copy", "move"] = "copy",
 ) -> Path | None:
-    ...  # pragma: nocover
+    ...
 
 
-def backup(path, *, suffix=None, force=False, action="copy"):
+def backup(
+    path: str | Path,
+    *,
+    suffix: str | None = None,
+    force: bool = False,
+    action: Literal["copy", "move"] = "copy",
+) -> str | Path | None:
     """Recursively copy or move a file of directory from <path> to
     <path>.<suffix>.
 
