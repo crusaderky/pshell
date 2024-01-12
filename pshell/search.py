@@ -59,17 +59,19 @@ class FileMatchError(Exception):
 def glob(
     pathname: str, *, min_results: int = 0, max_results: int | None = None
 ) -> list[str]:
-    ...  # pragma: nocover
+    ...
 
 
 @overload
 def glob(
     pathname: Path, *, min_results: int = 0, max_results: int | None = None
 ) -> list[Path]:
-    ...  # pragma: nocover
+    ...
 
 
-def glob(pathname, *, min_results=0, max_results=None):
+def glob(
+    pathname: str | Path, *, min_results: int = 0, max_results: int | None = None
+) -> list[str] | list[Path]:
     """Like :func:`glob.glob`, but in addition it supports environment
     variables in pathname, logs the number of results, and incorporates
     protection from non-existing paths.
@@ -115,7 +117,9 @@ def iglob(
     ...  # pragma: nocover
 
 
-def iglob(pathname, *, min_results=0, max_results=None):
+def iglob(
+    pathname: str | Path, *, min_results: int = 0, max_results: int | None = None
+) -> Iterator[str] | Iterator[Path]:
     """Like :func:`glob`, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
     results before :class:`FileMatchError` is raised.

@@ -108,15 +108,15 @@ def override_env(key: str, value: str | Path | None) -> Iterator[None]:
 
 @overload
 def resolve_env(s: str) -> str:
-    ...  # pragma: nocover
+    ...
 
 
 @overload
 def resolve_env(s: Path) -> Path:
-    ...  # pragma: nocover
+    ...
 
 
-def resolve_env(s):
+def resolve_env(s: str | Path) -> str | Path:
     """Resolve all environment variables in target string or :class:`~pathlib.Path`.
 
     This command always uses the bash syntax ``$VARIABLE`` or ``${VARIABLE}``.

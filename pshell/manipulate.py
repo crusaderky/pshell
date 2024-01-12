@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from pshell import log
 from pshell.open import pshell_open
@@ -15,7 +16,7 @@ def concatenate(
     input_fnames: Sequence[str | Path],
     output_fname: str | Path,
     mode: str = "w",
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Concatenate files. Python equivalent of
     :command:`cat input_fnames[0] input_fnames[1] ... > output_fname`.
@@ -49,7 +50,10 @@ def concatenate(
 
 
 def _concatenate_binary(
-    input_fnames: Sequence[str | Path], output_fname: str | Path, mode: str, **kwargs
+    input_fnames: Sequence[str | Path],
+    output_fname: str | Path,
+    mode: str,
+    **kwargs: Any,
 ) -> None:
     """Implementation of concatenate for binary files"""
     with pshell_open(output_fname, mode, **kwargs) as ofh:
@@ -60,7 +64,10 @@ def _concatenate_binary(
 
 
 def _concatenate_text(
-    input_fnames: Sequence[str | Path], output_fname: str | Path, mode: str, **kwargs
+    input_fnames: Sequence[str | Path],
+    output_fname: str | Path,
+    mode: str,
+    **kwargs: Any,
 ) -> None:
     """Implementation of concatenate for text files"""
     prepend_newline = False
