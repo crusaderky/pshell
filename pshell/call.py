@@ -85,8 +85,8 @@ def real_fh(fh: IO | None) -> Any:
     # 3. read from its read end
     # 4. dump contents into the pseudo file handle
     fd_in, fd_out = os.pipe()
-    real_fh_in = open(fd_in, "r" + bin_flag, closefd=True)
-    real_fh_out = open(fd_out, "w" + bin_flag, closefd=True)
+    real_fh_in = open(fd_in, "r" + bin_flag, closefd=True)  # noqa: SIM115
+    real_fh_out = open(fd_out, "w" + bin_flag, closefd=True)  # noqa: SIM115
 
     # The size of a pipe is 64 kbytes on Linux.
     # If you try writing more than that without reading from the other

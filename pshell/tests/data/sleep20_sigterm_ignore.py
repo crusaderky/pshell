@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Simple script that executes for 20s and ignores SIGTERM.
 """
 import os

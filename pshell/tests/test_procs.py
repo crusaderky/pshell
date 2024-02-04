@@ -12,6 +12,10 @@ import pytest
 import pshell as sh
 from pshell.tests import DATADIR
 
+pytestmark = pytest.mark.filterwarnings(
+    r"ignore:subprocess \d+ is still running:ResourceWarning"
+)
+
 
 def spawn_test_proc():
     """Start a long-running process"""

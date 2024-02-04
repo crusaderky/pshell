@@ -67,8 +67,7 @@ def test_override_env(str_or_path):
     assert os.environ["landgbashTEST4"] == "original"
 
     # Test that the cleanup also happens in case of Exception
-    with pytest.raises(StubError):
-        with sh.override_env("landgbashTEST3", "foo"):
-            assert os.getenv("landgbashTEST3") == "foo"
-            raise StubError()
+    with pytest.raises(StubError), sh.override_env("landgbashTEST3", "foo"):
+        assert os.getenv("landgbashTEST3") == "foo"
+        raise StubError()
     assert "landgbashTEST3" not in os.environ

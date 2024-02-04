@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Simple script that executes for 20s, and gracefully shuts down in 5s once
 SIGTERM is received.
 """
