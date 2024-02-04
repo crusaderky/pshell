@@ -141,10 +141,9 @@ def test_pushd(str_or_path, use_env, tmpdir):
     assert os.getcwd() == d0
 
     # Test that the cleanup also happens in case of Exception
-    with pytest.raises(StubError):
-        with sh.pushd(dir_to):
-            assert os.getcwd() == str(tmpdir)
-            raise StubError()
+    with pytest.raises(StubError), sh.pushd(dir_to):
+        assert os.getcwd() == str(tmpdir)
+        raise StubError()
     assert os.getcwd() == d0
 
 

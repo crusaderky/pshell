@@ -27,9 +27,8 @@ def test_real_fh_none():
 
 def test_real_fh_trivial():
     # Real POSIX-backed file handle
-    with tempfile.TemporaryFile() as fh:
-        with sh.real_fh(fh) as rfh:
-            assert rfh is fh
+    with tempfile.TemporaryFile() as fh, sh.real_fh(fh) as rfh:
+        assert rfh is fh
 
 
 def test_real_fh_stringio():
@@ -52,10 +51,9 @@ def test_real_fh_crash():
     # Test that the output copy is wrapped by a `finally` clause,
     # so that it is not lost if the wrapped code raises an Exception
     fh = io.StringIO()
-    with pytest.raises(StubError):
-        with sh.real_fh(fh) as rfh:
-            rfh.write("Hello world")
-            raise StubError()
+    with pytest.raises(StubError), sh.real_fh(fh) as rfh:
+        rfh.write("Hello world")
+        raise StubError()
 
     assert fh.getvalue() == "Hello world"
 

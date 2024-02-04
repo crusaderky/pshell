@@ -35,9 +35,8 @@ def check_fd_was_closed(fname):
 
 def test_check_fd_was_closed(tmpdir):
     check_fd_was_closed("notexist")
-    with open(f"{tmpdir}/test_open.123", "w"):
-        with pytest.raises(AssertionError):
-            check_fd_was_closed("test_open")
+    with open(f"{tmpdir}/test_open.123", "w"), pytest.raises(AssertionError):
+        check_fd_was_closed("test_open")
     check_fd_was_closed("test_open")
 
 
@@ -105,24 +104,24 @@ def test_open_binary(str_or_path, tmpdir, openfunc, ext, compression):
 
 @compression_param
 def test_open_encoding(tmpdir, openfunc, ext, compression):
-    TEXT = "Crème brûlée"
-    TEXT_REPLACED = "Cr�me br�l�e"
+    text = "Crème brûlée"
+    text_replaced = "Cr�me br�l�e"
     fname_utf8 = f"{tmpdir}/test_utf8{ext}"
     fname_latin1 = f"{tmpdir}/test_latin1{ext}"
 
     with openfunc(fname_utf8, "wt", encoding="utf-8") as fh:
-        fh.write(TEXT)
+        fh.write(text)
     with openfunc(fname_latin1, "wt", encoding="latin1") as fh:
-        fh.write(TEXT)
+        fh.write(text)
 
     # sh.open must always default to utf-8
     with sh.open(fname_utf8, compression=compression) as fh:
-        assert fh.read() == TEXT
+        assert fh.read() == text
     with sh.open(fname_latin1, compression=compression, encoding="latin1") as fh:
-        assert fh.read() == TEXT
+        assert fh.read() == text
     # sh.open must always default to replace unrecognized characters with ?
     with sh.open(fname_latin1, compression=compression) as fh:
-        assert fh.read() == TEXT_REPLACED
+        assert fh.read() == text_replaced
     with pytest.raises(UnicodeDecodeError):
         with sh.open(fname_latin1, errors="strict", compression=compression) as fh:
             fh.read()

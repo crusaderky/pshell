@@ -137,4 +137,4 @@ def resolve_env(s: str | Path) -> str | Path:
     try:
         return type(s)(string.Template(str(s)).substitute(os.environ))
     except KeyError as e:
-        raise OSError(f"Environment variable {e} not found")
+        raise OSError(f"Environment variable {e} not found") from None
