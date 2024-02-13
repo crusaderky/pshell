@@ -6,4 +6,4 @@ dependencies:
   - pytest
   - pytest-cov
   - packaging
-  - psutil=5.4
+  - psutil=5.6
