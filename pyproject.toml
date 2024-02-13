@@ -93,7 +93,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["TEMPLATE"]
+known-first-party = ["pshell"]
 
 [tool.mypy]
 allow_incomplete_defs = false
