@@ -20,7 +20,7 @@ classifiers = [
 ]
 urls = {Homepage = "https://github.com/crusaderky/pshell"}
 requires-python = ">=3.8"
-dependencies = ["psutil >= 5.4"]
+dependencies = ["psutil >= 5.6"]
 dynamic = ["version"]
 
 [tool.setuptools]
@@ -93,7 +93,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["TEMPLATE"]
+known-first-party = ["pshell"]
 
 [tool.mypy]
 allow_incomplete_defs = false
