@@ -1,10 +1,16 @@
-name: Test latest
+name: Test
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: ['*']
+
+# When this workflow is queued, automatically cancel any previous running
+# or pending jobs from the same branch
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 defaults:
   run:
