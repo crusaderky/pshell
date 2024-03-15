@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.4.0:
 
-v1.4.0 (unreleased)
+v1.4.0 (2024-03-15)
 -------------------
 - Added formal support for Python 3.11 and 3.12 (the previous version works fine though)
 - Bumped minimum version of psutil from 5.4 to 5.6
