@@ -3,6 +3,7 @@ name = "pshell"
 authors = [{name = "Guido Imperiale", email = "crusaderky@gmail.com"}]
 license = {text = "Apache"}
 description = "An alternative to bash scripts"
+readme = "README.md"
 keywords = ["bash", "shell"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
