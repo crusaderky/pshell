@@ -39,13 +39,26 @@ Time required: about an hour.
     "Draft a new release" and paste in the latest from whats-new.rst.
 12. Use twine to register and upload the release on pypi. Be careful, you can't
     take this back!
-      twine upload dist/*.tar.gz
+      twine upload dist/*
     You will need to be listed as a package owner at
     https://pypi.python.org/pypi/pshell for this to work.
 13. Update the docs. Login to https://readthedocs.org/projects/pshell/versions/
     and switch your new release tag (at the bottom) from "Inactive" to "Active".
     It should now build automatically.
-14. Update conda-forge. Clone https://github.com/conda-forge/pshell-feedstock
-    and update the version number and sha256 in meta.yaml. (On OS X, you can
-    calculate sha256 with `shasum -a 256 pshell-X.Y.Z.tar.gz`). Submit a pull
-    request (and merge it, once CI passes).
+    Make sure that both the new tagged version and 'stable' build successfully.
+14. Update conda-forge.
+14a.  Clone https://github.com/conda-forge/pshell-feedstock
+14b.  Update the version number and sha256 in meta.yaml.
+      You can calculate sha256 with
+        sha256sum dist/*
+14c.  Double check dependencies in meta.yaml and update them to match pyproject.toml.
+14d.  Submit a pull request.
+14e.  Write a comment in the PR:
+        @conda-forge-admin, please rerender
+      Wait for the rerender commit (it may take a few minutes).
+14f.  Wait for CI to pass and merge.
+14g.  The next day, test the conda-forge release
+        conda search pshell
+        conda create -n pshell-test pshell
+        conda list
+        python -m 'import pshell'
