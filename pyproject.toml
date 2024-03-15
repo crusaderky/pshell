@@ -3,7 +3,6 @@ name = "pshell"
 authors = [{name = "Guido Imperiale", email = "crusaderky@gmail.com"}]
 license = {text = "Apache"}
 description = "An alternative to bash scripts"
-readme = "README.md"
 keywords = ["bash", "shell"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -23,6 +22,10 @@ urls = {Homepage = "https://github.com/crusaderky/pshell"}
 requires-python = ">=3.8"
 dependencies = ["psutil >= 5.6"]
 dynamic = ["version"]
+
+[project.readme]
+text = "An alternative to bash scripts"
+content-type = "text/x-rst"
 
 [tool.setuptools]
 packages = ["pshell"]
