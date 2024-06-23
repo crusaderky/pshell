@@ -20,7 +20,7 @@ classifiers = [
 ]
 urls = {Homepage = "https://github.com/crusaderky/pshell"}
 requires-python = ">=3.8"
-dependencies = ["psutil >= 5.6"]
+dependencies = ["psutil >= 5.7"]
 dynamic = ["version"]
 
 [project.readme]
