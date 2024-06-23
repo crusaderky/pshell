@@ -7,6 +7,7 @@ What's New
 
 v1.5.0 (unreleased)
 -------------------
+- Bumped minimum version of psutil from 5.6 to 5.7
 
 
 .. _whats-new.1.4.0:
