@@ -234,11 +234,17 @@ def wait_for_server(
     if timeout is not None:
         t0 = time.time()
 
+    def net_connections() -> list[psutil.Connections]:
+        if psutil.version_info >= (6, ):
+            return proc.net_connections()
+        else:
+            return proc.connections()
+
     while True:
         # proc.net_connections() will raise Exception if the process dies
         open_ports = {
             conn.laddr.port
-            for conn in proc.net_connections()
+            for conn in net_connections()
             if conn.status == "LISTEN"
         }
         open_ports -= ignore_ports
