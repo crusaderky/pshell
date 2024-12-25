@@ -1,5 +1,4 @@
-"""Convenience aggregator for all submodules
-"""
+"""Convenience aggregator for all submodules"""
 
 import importlib.metadata
 from subprocess import CalledProcessError, TimeoutExpired  # noqa: F401

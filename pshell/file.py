@@ -1,5 +1,5 @@
-"""Functions for handling files and directories
-"""
+"""Functions for handling files and directories"""
+
 from __future__ import annotations
 
 import datetime
@@ -7,6 +7,7 @@ import errno
 import os
 import shutil
 import stat
+import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -16,17 +17,17 @@ from pshell import log
 from pshell.env import resolve_env
 
 __all__ = (
-    "remove",
-    "chdir",
-    "pushd",
-    "move",
-    "copy",
     "backup",
-    "symlink",
+    "chdir",
+    "copy",
     "exists",
     "lexists",
     "mkdir",
+    "move",
     "owner",
+    "pushd",
+    "remove",
+    "symlink",
 )
 
 
@@ -80,7 +81,7 @@ def remove(
                 # something do chmod u+w on the failed path and continue
                 has_errors = False
 
-                def onerror(function: object, path: str, excinfo: object) -> None:
+                def onexc(function: object, path: str, excinfo: object) -> None:  # noqa:ARG001
                     # Do not act only on PermissionError.
                     # It could also be OSError('Directory not empty').
                     nonlocal has_errors
@@ -92,7 +93,10 @@ def remove(
                     except OSError:  # pragma: nocover
                         pass
 
-                shutil.rmtree(realpath, onerror=onerror)
+                if sys.version_info < (3, 12):
+                    shutil.rmtree(realpath, onerror=onexc)
+                else:
+                    shutil.rmtree(realpath, onexc=onexc)
 
                 # If there were any errors on the first round, perform a second
                 # deletion pass this time with no error control. At this point,
@@ -218,8 +222,7 @@ def backup(
     suffix: str | None = None,
     force: bool = False,
     action: Literal["copy", "move"] = "copy",
-) -> str | None:
-    ...
+) -> str | None: ...
 
 
 @overload
@@ -229,8 +232,7 @@ def backup(
     suffix: str | None = None,
     force: bool = False,
     action: Literal["copy", "move"] = "copy",
-) -> Path | None:
-    ...
+) -> Path | None: ...
 
 
 def backup(

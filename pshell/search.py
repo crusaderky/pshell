@@ -1,5 +1,5 @@
-"""Search and file system traversal functions
-"""
+"""Search and file system traversal functions"""
+
 from __future__ import annotations
 
 import glob as _glob
@@ -47,26 +47,23 @@ class FileMatchError(Exception):
 
         if self.max_results is None:
             return f"{msg} at least {self.min_results}"
-        elif self.max_results == self.min_results:
+        if self.max_results == self.min_results:
             return f"{msg} exactly {self.min_results}"
-        elif self.min_results > 0:
+        if self.min_results > 0:
             return f"{msg} between {self.min_results} and {self.max_results}"
-        else:
-            return f"{msg} up to {self.max_results}"
+        return f"{msg} up to {self.max_results}"
 
 
 @overload
 def glob(
     pathname: str, *, min_results: int = 0, max_results: int | None = None
-) -> list[str]:
-    ...
+) -> list[str]: ...
 
 
 @overload
 def glob(
     pathname: Path, *, min_results: int = 0, max_results: int | None = None
-) -> list[Path]:
-    ...
+) -> list[Path]: ...
 
 
 def glob(
@@ -106,15 +103,13 @@ def glob(
 @overload
 def iglob(
     pathname: str, *, min_results: int = 0, max_results: int | None = None
-) -> Iterator[str]:
-    ...  # pragma: nocover
+) -> Iterator[str]: ...  # pragma: nocover
 
 
 @overload
 def iglob(
     pathname: Path, *, min_results: int = 0, max_results: int | None = None
-) -> Iterator[Path]:
-    ...  # pragma: nocover
+) -> Iterator[Path]: ...  # pragma: nocover
 
 
 def iglob(

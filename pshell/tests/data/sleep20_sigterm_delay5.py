@@ -1,6 +1,7 @@
 """Simple script that executes for 20s, and gracefully shuts down in 5s once
 SIGTERM is received.
 """
+
 import os
 import signal
 import sys

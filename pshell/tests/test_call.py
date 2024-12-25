@@ -51,7 +51,7 @@ def test_real_fh_crash():
     # Test that the output copy is wrapped by a `finally` clause,
     # so that it is not lost if the wrapped code raises an Exception
     fh = io.StringIO()
-    with pytest.raises(StubError), sh.real_fh(fh) as rfh:
+    with pytest.raises(StubError), sh.real_fh(fh) as rfh:  # noqa: PT012
         rfh.write("Hello world")
         raise StubError()
 

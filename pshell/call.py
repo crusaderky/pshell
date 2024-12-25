@@ -1,5 +1,5 @@
-"""Functions to execute shell commands in a subprocess
-"""
+"""Functions to execute shell commands in a subprocess"""
+
 from __future__ import annotations
 
 import io
@@ -11,7 +11,7 @@ from typing import IO, Any, Literal, overload
 
 from pshell import log
 
-__all__ = ("real_fh", "call", "check_call", "check_output")
+__all__ = ("call", "check_call", "check_output", "real_fh")
 
 _BASH_INIT = "set -o errexit -o pipefail -o nounset && "
 """Sane initialization string for new bash instances.
@@ -92,7 +92,7 @@ def real_fh(fh: IO | None) -> Any:
     # If you try writing more than that without reading from the other
     # side, the write will lock indefinitely, resulting in a deadlock.
     # It's very easy to exceed this limit, e.g. when calling sh.check_call().
-    # Use a thread to continuously move data beetween file handles.
+    # Use a thread to continuously move data between file handles.
     def flush() -> None:
         while True:
             data = real_fh_in.read(4096)
@@ -171,7 +171,7 @@ def call(
         if set, search for the target password and replace it with XXXX
         before logging it.
     :param bool shell:
-        Invoke inside the shell. This differes from the same parameter of
+        Invoke inside the shell. This differs from the same parameter of
         :func:`subprocess.call` in several ways:
 
         - It is True by default instead of False
@@ -245,8 +245,7 @@ def check_output(
     decode: Literal[True] = True,
     encoding: str = "utf-8",
     errors: str = "replace",
-) -> str:
-    ...
+) -> str: ...
 
 
 @overload
@@ -261,8 +260,7 @@ def check_output(
     decode: Literal[False],
     encoding: str = "utf-8",
     errors: str = "replace",
-) -> bytes:
-    ...
+) -> bytes: ...
 
 
 def check_output(

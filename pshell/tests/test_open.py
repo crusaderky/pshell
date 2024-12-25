@@ -80,7 +80,7 @@ def test_open_exclusive_success(str_or_path, tmpdir, openfunc, ext, compression)
 
 
 @compression_param
-def test_open_exclusive_failure(tmpdir, openfunc, ext, compression):
+def test_open_exclusive_failure(tmpdir, openfunc, ext, compression):  # noqa: ARG001
     fname = f"{tmpdir}/test_open{ext}"
     with open(fname, "w"):
         pass
@@ -122,7 +122,7 @@ def test_open_encoding(tmpdir, openfunc, ext, compression):
     # sh.open must always default to replace unrecognized characters with ?
     with sh.open(fname_latin1, compression=compression) as fh:
         assert fh.read() == text_replaced
-    with pytest.raises(UnicodeDecodeError):
+    with pytest.raises(UnicodeDecodeError):  # noqa: SIM117
         with sh.open(fname_latin1, errors="strict", compression=compression) as fh:
             fh.read()
 
@@ -142,20 +142,19 @@ def test_open_kwargs(tmpdir, openfunc, ext, compression, newline):
 # no compression support
 def test_open_fd():
     r, w = os.pipe()
-    with sh.open(r, "rb", buffering=0) as fh_r:
-        with sh.open(w, "wb", buffering=0) as fh_w:
-            fh_w.write(b"hello world\n")
-            assert fh_r.readline() == b"hello world\n"
+    with sh.open(r, "rb", buffering=0) as fh_r, sh.open(w, "wb", buffering=0) as fh_w:
+        fh_w.write(b"hello world\n")
+        assert fh_r.readline() == b"hello world\n"
 
 
 def test_open_invalid_compression():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="compression"):
         sh.open("foo", compression="unk")
 
 
 def test_open_fd_invalid_compression():
     r, _ = os.pipe()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="compression"):
         sh.open(r, "rb", compression="gzip")
 
 
