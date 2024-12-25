@@ -1,5 +1,5 @@
-"""Functions and global variables related to logging
-"""
+"""Functions and global variables related to logging"""
+
 from __future__ import annotations
 
 from contextvars import ContextVar
@@ -36,10 +36,9 @@ def get_logger() -> Logger:
     ctx = context_logger.get()
     if ctx:
         return ctx
-    elif _global_logger:
+    if _global_logger:
         return _global_logger
-    else:
-        return getLogger("pshell")
+    return getLogger("pshell")
 
 
 def debug(msg: str, *args: Any, **kwargs: Any) -> None:

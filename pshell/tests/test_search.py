@@ -100,13 +100,13 @@ def test_glob_iglob_recursive(tmpdir):
 
 
 def test_glob_iglob_bad_args():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="min_results"):
         sh.glob(".", min_results=-1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="min_results"):
         next(sh.iglob(".", min_results=-1))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="max_results"):
         sh.glob(".", min_results=2, max_results=1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="min_results"):
         next(sh.iglob(".", min_results=2, max_results=1))
 
 

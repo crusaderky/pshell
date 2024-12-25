@@ -1,5 +1,5 @@
-"""Functions for manipulating files
-"""
+"""Functions for manipulating files"""
+
 from __future__ import annotations
 
 from collections.abc import Sequence

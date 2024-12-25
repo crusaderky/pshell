@@ -1,5 +1,5 @@
-"""Simple script that executes for 20s and ignores SIGTERM.
-"""
+"""Simple script that executes for 20s and ignores SIGTERM."""
+
 import os
 import signal
 import time

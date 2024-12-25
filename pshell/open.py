@@ -1,5 +1,5 @@
-"""Functions to open file descriptors
-"""
+"""Functions to open file descriptors"""
+
 from __future__ import annotations
 
 import os.path
@@ -106,7 +106,7 @@ def pshell_open(
             compression = False
 
     if compression:
-        compress_label = " (%s compression)" % compression
+        compress_label = f" ({compression} compression)"
     else:
         compress_label = ""
 

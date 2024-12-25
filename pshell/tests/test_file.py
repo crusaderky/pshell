@@ -79,7 +79,7 @@ def test_remove_force2():
 
 
 def test_remove_noperm(tmpdir):
-    testpath = "%s/test_remove_noperm" % tmpdir
+    testpath = f"{tmpdir}/test_remove_noperm"
     os.makedirs(testpath + "/foo/bar")
     os.chmod(testpath + "/foo/bar", 0)
     with pytest.raises(PermissionError):
@@ -141,7 +141,7 @@ def test_pushd(str_or_path, use_env, tmpdir):
     assert os.getcwd() == d0
 
     # Test that the cleanup also happens in case of Exception
-    with pytest.raises(StubError), sh.pushd(dir_to):
+    with pytest.raises(StubError), sh.pushd(dir_to):  # noqa:PT012
         assert os.getcwd() == str(tmpdir)
         raise StubError()
     assert os.getcwd() == d0
@@ -279,7 +279,7 @@ def test_symlink(str_or_path, tmpdir):
     )
     assert (
         subprocess.check_output(
-            "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir, shell=True
+            f"ls -l {tmpdir}/test_ln3 | awk '{{print $NF}}'", shell=True
         )
         == b"test_ln1\n"
     )
@@ -293,7 +293,7 @@ def test_symlink(str_or_path, tmpdir):
     )
     assert (
         subprocess.check_output(
-            "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir, shell=True
+            f"ls -l {tmpdir}/test_ln3 | awk '{{print $NF}}'", shell=True
         ).decode("utf-8")
         == f"{tmpdir}/test_ln1\n"
     )
@@ -322,7 +322,7 @@ def test_symlink(str_or_path, tmpdir):
     )
     assert (
         subprocess.check_output(
-            "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir, shell=True
+            f"ls -l {tmpdir}/test_ln3 | awk '{{print $NF}}'", shell=True
         )
         == b"test_ln2\n"
     )
@@ -335,7 +335,7 @@ def test_symlink(str_or_path, tmpdir):
     )
     assert (
         subprocess.check_output(
-            "ls -l %s/test_ln3 | awk '{print $NF}'" % tmpdir, shell=True
+            f"ls -l {tmpdir}/test_ln3 | awk '{{print $NF}}'", shell=True
         )
         == b"test_ln2\n"
     )

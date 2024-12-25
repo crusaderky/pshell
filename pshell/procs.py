@@ -1,5 +1,5 @@
-"""Utilities to manage running processes
-"""
+"""Utilities to manage running processes"""
+
 from __future__ import annotations
 
 import getpass
@@ -235,9 +235,11 @@ def wait_for_server(
         t0 = time.time()
 
     while True:
-        # proc.connections() will raise Exception if the process dies
+        # proc.net_connections() will raise Exception if the process dies
         open_ports = {
-            conn.laddr.port for conn in proc.connections() if conn.status == "LISTEN"
+            conn.laddr.port
+            for conn in proc.net_connections()
+            if conn.status == "LISTEN"
         }
         open_ports -= ignore_ports
         if port is None and open_ports:

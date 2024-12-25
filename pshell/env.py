@@ -1,5 +1,5 @@
-"""Functions related to environment variables
-"""
+"""Functions related to environment variables"""
+
 from __future__ import annotations
 
 import os
@@ -12,7 +12,7 @@ from typing import IO, overload
 from pshell import log
 from pshell.call import check_output
 
-__all__ = ("source", "putenv", "override_env", "resolve_env")
+__all__ = ("override_env", "putenv", "resolve_env", "source")
 
 
 def source(bash_file: str | Path, *, stderr: IO | None = None) -> None:
@@ -107,13 +107,11 @@ def override_env(key: str, value: str | Path | None) -> Iterator[None]:
 
 
 @overload
-def resolve_env(s: str) -> str:
-    ...
+def resolve_env(s: str) -> str: ...
 
 
 @overload
-def resolve_env(s: Path) -> Path:
-    ...
+def resolve_env(s: Path) -> Path: ...
 
 
 def resolve_env(s: str | Path) -> str | Path:
