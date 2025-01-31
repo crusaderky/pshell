@@ -60,5 +60,6 @@ Time required: about an hour.
 14g.  The next day, test the conda-forge release
         conda search pshell
         conda create -n pshell-test pshell
+        conda activate pshell-test
         conda list
-        python -m 'import pshell'
+        python -c 'import pshell'
