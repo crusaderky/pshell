@@ -1,3 +1,7 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
 *.pyc
 __pycache__
 
@@ -60,3 +64,4 @@ Icon*
 doc/_build
 Untitled.ipynb
 htmlcov/
+.~lock.*

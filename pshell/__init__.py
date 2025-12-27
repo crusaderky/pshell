@@ -39,4 +39,4 @@ try:
     __version__ = importlib.metadata.version("pshell")
 except importlib.metadata.PackageNotFoundError:  # pragma: nocover
     # Local copy, not installed with pip
-    __version__ = "999"
+    __version__ = "9999"

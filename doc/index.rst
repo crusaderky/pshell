@@ -83,6 +83,6 @@ It was renamed and open-sourced in 2018.
 License
 -------
 
-pshell is available under the open source `Apache License`__.
+This software is available under the open source `Apache License`__.
 
 __ http://www.apache.org/licenses/LICENSE-2.0.html

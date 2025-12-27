@@ -1,8 +1,0 @@
-name: pshell
-channels:
-  - conda-forge
-dependencies:
-  - pytest
-  - pytest-cov
-  - packaging
-  - psutil

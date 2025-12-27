@@ -408,7 +408,7 @@ def owner(fname: str | Path) -> str:
     _unix_only()
 
     # Unix-only module
-    import pwd
+    import pwd  # noqa: PLC0415
 
     fname = resolve_env(fname)
     numeric_uid = os.stat(fname).st_uid

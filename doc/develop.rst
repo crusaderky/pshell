@@ -1,59 +1,105 @@
 Development Guidelines
 ======================
 
-Install
--------
+
+Reporting issues
+----------------
+
+If you find a bug or want to suggest a new feature, please report it on the
+`GitHub issues page <https://github.com/crusaderky/pshell/issues>`_.
+
+Before you report an issue, please check if it can still be reproduced with the
+latest version of this software.
+
+For bug reports, please include the following information:
+
+- A description of the bug
+- The expected behavior
+- The actual behavior
+- Steps to reproduce the bug (preferably with a minimal example)
+- Any relevant error messages or stack traces
+
+
+Deploying a development environment
+-----------------------------------
 
 1. Clone this repository with git:
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      git clone git@github.com:crusaderky/pshell.git
-      cd pshell
+     git clone git@github.com:crusaderky/pshell.git
+     cd pshell
 
-2. Install Python (OS-dependent)
-3. .. code-block:: bash
-
-      pip install -r requirements.txt
-
-To keep a fork in sync with the upstream source:
+2. `Install pixi <https://pixi.sh/latest/#installation>`_
+3. To keep a fork in sync with the upstream source:
 
 .. code-block:: bash
 
    cd pshell
+   git remote add upstream git@github.com:crusaderky/pshell.git
+   git remote -v
    git fetch -a upstream
    git checkout main
    git pull upstream main
    git push origin main
 
+
 Test
 ----
 
-Test using ``py.test``:
+Test using pixi:
 
 .. code-block:: bash
 
-   py.test pshell
+   pixi run tests
+
+Test with coverage:
+
+.. code-block:: bash
+
+   pixi run coverage
+
+Test with coverage and open HTML report in your browser:
+
+.. code-block:: bash
+
+   pixi run open-coverage
+
 
 Code Formatting
 ---------------
 
-pshell uses several code linters (ruff, black, mypy), which are enforced by CI.
-Developers should run them locally before they submit a PR, through the single command
+This project uses several code linters (ruff, mypy, etc.), which are enforced by
+CI. Developers should run them locally before they submit a PR, through the single
+command
 
 .. code-block:: bash
 
-    pre-commit run --all-files
+    pixi run lint
 
-This makes sure that linter versions and options are aligned for all developers.
-
-Optionally, you may wish to setup the `pre-commit hooks <https://pre-commit.com/>`_ to
-run automatically when you make a git commit. This can be done by running:
+Optionally, you may wish to run the linters automatically every time you make a
+git commit. This can be done by running:
 
 .. code-block:: bash
 
-   pre-commit install
+   pixi run install-git-hooks
 
-from the root of the pshell repository. Now the code linters will be run each time
-you commit changes. You can skip these checks with ``git commit --no-verify`` or with
+Now the code linters will be run each time you commit changes.
+You can skip these checks with ``git commit --no-verify`` or with
 the short version ``git commit -n``.
+
+
+Documentation
+-------------
+
+Build the documentation in ``build/html`` using pixi:
+
+.. code-block:: bash
+
+    pixi run docs
+
+Build the documentation and open it in your browser:
+
+.. code-block:: bash
+
+    pixi run open-docs

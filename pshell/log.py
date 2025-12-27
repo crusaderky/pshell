@@ -16,9 +16,9 @@ def set_global_logger(logger: Logger | str | None) -> Logger | None:
     unless ``context_logger`` is defined.
 
     :returns:
-        Previous global logger
+        Previous global logger (not thread-safe).
     """
-    global _global_logger
+    global _global_logger  # noqa: PLW0603
 
     prev = _global_logger
     if isinstance(logger, str):

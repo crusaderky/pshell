@@ -125,15 +125,15 @@ def pshell_open(
     if compression is False:
         open_func = open
     elif compression == "gzip":
-        import gzip
+        import gzip  # noqa: PLC0415
 
         open_func = gzip.open
     elif compression == "bzip2":
-        import bz2
+        import bz2  # noqa: PLC0415
 
         open_func = bz2.open
     elif compression == "lzma":
-        import lzma
+        import lzma  # noqa: PLC0415
 
         open_func = lzma.open
     else:
@@ -141,4 +141,4 @@ def pshell_open(
             "compression must be False, 'auto', 'gzip', 'bzip2', or 'lzma'"
         )
 
-    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)
+    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)  # type: ignore[arg-type, return-value]
