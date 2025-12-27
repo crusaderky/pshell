@@ -35,9 +35,9 @@ jobs:
           - mindeps
           - py310
           - py314
-        # include:
-        #   - os: ubuntu-latest
-        #     environment: nogil
+        include:
+          - os: ubuntu-latest
+            environment: nogil
 
     steps:
       - name: Checkout
@@ -57,9 +57,9 @@ jobs:
         if: matrix.environment != 'smoke'
         run: pixi run -e ${{ matrix.environment }} coverage
 
-      # - name: Free-threading stress test
-      #   if: matrix.environment == 'nogil'
-      #   run: pixi run -e nogil tests --parallel-threads=4
+      - name: Free-threading stress test
+        if: matrix.environment == 'nogil'
+        run: pixi run -e nogil tests --parallel-threads=4
 
       - name: codecov.io
         if: matrix.environment != 'smoke'

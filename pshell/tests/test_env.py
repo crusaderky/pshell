@@ -3,26 +3,39 @@ import os
 import pytest
 
 import pshell as sh
-from pshell.tests import DATADIR, StubError, unix_only
+from pshell.tests import StubError, get_name, unix_only
 
 
 @unix_only
-def test_source(str_or_path):
-    os.environ.pop("UNITTEST_DATA_1", None)
-    os.environ["UNITTEST_DATA_2"] = "old"
+def test_source(str_or_path, tmp_path):
+    foo = get_name("foo")
+    bar = get_name("bar")
+    baz = get_name("baz")
+    with open(tmp_path / "source.sh", "w") as fh:
+        # Do not confuse stdout of the sourced script with variable assignments
+        fh.write("echo pshell_test_ignore=me\n")
+        fh.write("echo pshell_test_ignore me too\n")
+        fh.write(f"export {foo}='foo'\n")
+        fh.write(f"export {bar}='bar'\n")
+
+    print(f"reset {bar}")
+    os.environ[bar] = "old"
 
     # Also test variable name resolution
-    os.environ["UNITTEST_DATADIR"] = DATADIR
-    sh.source(str_or_path("$UNITTEST_DATADIR/source.sh"))
+    os.environ[baz] = str(tmp_path)
+    sh.source(str_or_path(f"${baz}/source.sh"))
 
-    assert os.getenv("UNITTEST_DATA_1") == "foo"
-    assert os.getenv("UNITTEST_DATA_2") == "bar"
+    assert os.environ[foo] == "foo"
+    assert os.environ[bar] == "bar"
+    assert "pshell_test_ignore" not in os.environ
 
 
 def test_resolve_env(str_or_path):
-    os.environ["UNITTEST_FOO"] = "foo"
-    os.environ["UNITTEST_BAR"] = "bar"
-    out = sh.resolve_env(str_or_path("$UNITTEST_FOO.${UNITTEST_BAR}"))
+    foo = get_name("foo")
+    bar = get_name("bar")
+    os.environ[foo] = "foo"
+    os.environ[bar] = "bar"
+    out = sh.resolve_env(str_or_path(f"${foo}.${bar}"))
     assert str(out) == "foo.bar"
     assert isinstance(out, str_or_path)
 
@@ -31,43 +44,43 @@ def test_resolve_env(str_or_path):
 
 
 def test_putenv(str_or_path):
+    foo = get_name("foo")
+    bar = get_name("bar")
     # Base use case
-    os.environ.pop("PSHELLBASHTEST1", None)
-    sh.putenv("PSHELLBASHTEST1", str_or_path("foo"))
-    assert os.environ["PSHELLBASHTEST1"] == "foo"
+    sh.putenv(foo, str_or_path("foo"))
+    assert os.environ[foo] == "foo"
 
     # Variable value contains another variable that must be resolved
-    os.environ.pop("PSHELLBASHTEST2", None)
-    sh.putenv("PSHELLBASHTEST2", "$PSHELLBASHTEST1/bar")
-    assert os.environ["PSHELLBASHTEST2"] == "foo/bar"
+    sh.putenv(bar, f"${foo}/bar")
+    assert os.environ[bar] == "foo/bar"
 
     # Delete variable when it exists
-    sh.putenv("PSHELLBASHTEST1", None)
-    assert "PSHELLBASHTEST1" not in os.environ
+    sh.putenv(foo, None)
+    assert foo not in os.environ
 
     # Delete variable when it does not exist
-    sh.putenv("PSHELLBASHTEST1", None)
-    assert "PSHELLBASHTEST1" not in os.environ
+    sh.putenv(foo, None)
+    assert foo not in os.environ
 
     # Set blank variable (not the same as setting None, which deletes it)
-    sh.putenv("PSHELLBASHTEST1", "")
-    assert os.environ["PSHELLBASHTEST1"] == ""
+    sh.putenv(foo, "")
+    assert os.environ[foo] == ""
 
 
 def test_override_env(str_or_path):
-    os.environ.pop("PSHELLBASHTEST3", None)
-    os.environ["PSHELLBASHTEST4"] = "original"
+    foo = get_name("foo")
+    bar = get_name("bar")
+    os.environ[bar] = "original"
 
-    with sh.override_env("PSHELLBASHTEST3", str_or_path("foo")):  # noqa: SIM117
-        with sh.override_env("PSHELLBASHTEST4", "$PSHELLBASHTEST3/bar"):
-            assert os.getenv("PSHELLBASHTEST3") == "foo"
-            assert os.getenv("PSHELLBASHTEST4") == "foo/bar"
+    with sh.override_env(foo, str_or_path("foo")), sh.override_env(bar, f"${foo}/bar"):
+        assert os.getenv(foo) == "foo"
+        assert os.getenv(bar) == "foo/bar"
 
-    assert "PSHELLBASHTEST3" not in os.environ
-    assert os.environ["PSHELLBASHTEST4"] == "original"
+    assert foo not in os.environ
+    assert os.environ[bar] == "original"
 
     # Test that the cleanup also happens in case of Exception
-    with pytest.raises(StubError), sh.override_env("PSHELLBASHTEST3", "foo"):  # noqa: PT012
-        assert os.getenv("PSHELLBASHTEST3") == "foo"
+    with pytest.raises(StubError), sh.override_env(foo, "foo"):  # noqa: PT012
+        assert os.getenv(foo) == "foo"
         raise StubError()
-    assert "PSHELLBASHTEST3" not in os.environ
+    assert "foo" not in os.environ

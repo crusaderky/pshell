@@ -18,7 +18,7 @@ __all__ = ("override_env", "putenv", "resolve_env", "source")
 def source(bash_file: str | Path, *, stderr: IO | None = None) -> None:
     """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
-    The acquired variables are injected into ``os.environment`` and are
+    The acquired variables are injected into ``os.environ`` and are
     exposed to any subprocess invoked afterwards.
 
     .. note::
@@ -41,12 +41,25 @@ def source(bash_file: str | Path, *, stderr: IO | None = None) -> None:
     """
     log.info("Sourcing environment variables from %s", bash_file)
 
-    stdout = check_output(f'source "{bash_file}" 1>&2 && env', stderr=stderr)
+    # Thread safety: spawn a bash subprocess, make it sample the previous
+    # environment, run the script and sample again.
+    delim = "!!!pshell-source-delimiter!!!"
+    stdout = check_output(
+        f'env && echo {delim} && source "{bash_file}" 1>&2 && env', stderr=stderr
+    )
 
+    is_prev = True
+    prev_env = {}
     for line in stdout.splitlines():
+        if line == delim:
+            is_prev = False
+            continue
         (key, _, value) = line.partition("=")
-
-        if key not in ("_", "", "SHLVL") and os.getenv(key) != value:
+        if key in ("_", "", "SHLVL"):
+            continue
+        if is_prev:
+            prev_env[key] = value
+        elif prev_env.get(key) != value:
             log.debug("Setting environment variable: %s=%s", key, value)
             os.environ[key] = value
 
