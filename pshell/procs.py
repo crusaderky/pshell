@@ -231,8 +231,7 @@ def wait_for_server(
         proc = psutil.Process(proc)
     ignore_ports = set(ignore_ports) if ignore_ports else set()
 
-    if timeout is not None:
-        t0 = time.time()
+    t0 = time.time() if timeout is not None else 0
 
     def net_connections() -> list:
         if psutil.version_info < (6,):

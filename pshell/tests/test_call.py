@@ -77,7 +77,7 @@ def test_real_fh_fullpipe():
     # in an attempt to trigger a deadlock if the pipe isn't
     # continuously flushed.
     fh = io.StringIO()
-    payload = "x" * int(2**20)  # 1MB payload
+    payload = "x" * (2**20)  # 1MB payload
     with sh.real_fh(fh) as rfh:
         rfh.write(payload)
     assert fh.getvalue() == payload
