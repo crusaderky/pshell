@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os.path
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import IO, Any, BinaryIO, Literal
@@ -13,6 +14,9 @@ from pshell.env import resolve_env
 __all__ = ("pshell_open",)
 
 
+_HAS_PY314 = sys.version_info >= (3, 14)
+
+
 # When importing in __init__, we're going to rename pshell_open to just open
 def pshell_open(
     file: str | Path | int | BinaryIO,
@@ -20,7 +24,9 @@ def pshell_open(
     *,
     encoding: str | None = None,
     errors: str | None = None,
-    compression: Literal[False, "gzip", "bzip2", "lzma", "auto"] = "auto",
+    compression: Literal[
+        False, "gzip", "bzip2", "lzma", "zstd", "zstandard", "auto"
+    ] = "auto",
     **kwargs: Any,
 ) -> IO:
     """Open a file handle to target file name or file descriptor.
@@ -29,17 +35,17 @@ def pshell_open(
 
     - performs automatic environment variable resolution in the file name
     - logs the file access
-    - supports transparent compression
+    - supports automatic compression/decompression
 
     :param file:
         Path to the file to be opened or file descriptor to be wrapped.
-        If compression is set to 'gzip', 'bzip2' or 'lzma', file can also be a binary
-        file handle.
+        If compression is set to 'auto', 'gzip', 'bzip2', 'lzma', 'zstd', or
+        'zstandard', `file` can also be a binary file handle.
     :param str mode:
         As in the builtin :func:`open` function. It always defaults to text
         mode unless 'b' is explicitly specified; this is unlike
-        :func:`gzip.open`, :func:`bz2.open`, and :func:`lzma.open` which
-        instead default to binary mode.
+        :func:`gzip.open`, :func:`bz2.open`, :func:`lzma.open`, or
+        :func:`compression.zstd.open`  which instead default to binary mode.
     :param str encoding:
         Character encoding when in text mode. Unlike the builtin :func:`open`
         function, it always defaults to utf-8 instead of being
@@ -52,15 +58,18 @@ def pshell_open(
 
         False
             No compression (use builtin :func:`open`)
-        'gzip'
+        ``gzip``
             gzip compression (use :func:`gzip.open`)
-        'bzip2':
+        ``bzip2``
             bzip2 compression (use :func:`bz2.open`)
-        'lzma':
+        ``lzma``
             lzma compression (use :func:`lzma.open`)
-        'auto':
+        ``zstd``, ``zstandard``
+            zstd compression (use :func:`compression.zstd.open`).
+            Requires either Python 3.14+ or the ``backports.zstd`` package.
+        ``auto`` *(default)*:
             Automatically set compression if the file extension is ``.gz``,
-            ``.bz2``, or ``.xz`` (case insensitive)
+            ``.bz2``, ``.xz``, ``.zst``, or ``.zstd`` (case insensitive)
     :param kwargs:
         Passed verbatim to the underlying open function
     """
@@ -69,7 +78,8 @@ def pshell_open(
         mode_label = "binary "
     else:
         # Default to text mode if the user doesn't specify text or binary. This
-        # overrides gzip.open, bz2.open, lzma.open which default to binary.
+        # overrides gzip.open, bz2.open, lzma.open, compression.zstd.open
+        # which default to binary.
         if "t" not in mode:
             mode += "t"
 
@@ -100,10 +110,14 @@ def pshell_open(
                 compression = "bzip2"
             elif ext == ".xz":
                 compression = "lzma"
+            elif ext in (".zst", ".zstd"):
+                compression = "zstd"
             else:
                 compression = False
         else:
             compression = False
+    elif compression == "zstandard":
+        compression = "zstd"
 
     if compression:
         compress_label = f" ({compression} compression)"
@@ -125,20 +139,38 @@ def pshell_open(
     if compression is False:
         open_func = open
     elif compression == "gzip":
-        import gzip  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import gzip  # noqa: PLC0415
+        else:
+            import gzip  # noqa: PLC0415
 
         open_func = gzip.open
     elif compression == "bzip2":
-        import bz2  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import bz2  # noqa: PLC0415
+        else:
+            import bz2  # noqa: PLC0415
 
         open_func = bz2.open
     elif compression == "lzma":
-        import lzma  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import lzma  # noqa: PLC0415
+        else:
+            import lzma  # noqa: PLC0415
 
         open_func = lzma.open
+    elif compression == "zstd":
+        if _HAS_PY314:
+            from compression import zstd  # noqa: PLC0415
+        else:
+            # Optional dependency; will raise ImportError if not installed
+            from backports import zstd  # noqa: PLC0415
+
+        open_func = zstd.open
     else:
         raise ValueError(
-            "compression must be False, 'auto', 'gzip', 'bzip2', or 'lzma'"
+            "compression must be False, 'auto', 'gzip', 'bzip2', 'lzma', "
+            "'zstd', or 'zstandard'"
         )
 
-    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)  # type: ignore[arg-type, return-value]
+    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)  # type: ignore[arg-type]

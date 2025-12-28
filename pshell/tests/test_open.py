@@ -3,12 +3,40 @@ import gzip
 import io
 import lzma
 import os
+import sys
 
 import psutil
 import pytest
 
 import pshell as sh
 from pshell.tests import get_name
+
+HAS_PY314 = sys.version_info >= (3, 14)
+
+if sys.version_info >= (3, 14):
+    from compression import zstd
+
+    has_zstd = True
+else:
+    try:
+        from backports import zstd
+
+        has_zstd = True
+    except ImportError:
+
+        class zstd:  # type: ignore[no-redef]  # noqa: N801
+            def open(*_args, **_kwargs):
+                raise AssertionError("unreachable")  # pragma: no cover
+
+            def decompress(*_args, **_kwargs):
+                raise AssertionError("unreachable")  # pragma: no cover
+
+        has_zstd = False
+
+zstd_mark = pytest.mark.skipif(
+    not has_zstd, reason="zstd requires Python 3.14+ or backports.zstd"
+)
+
 
 compression_param = pytest.mark.parametrize(
     "openfunc,ext,compression",
@@ -20,10 +48,16 @@ compression_param = pytest.mark.parametrize(
         (gzip.open, ".GZ", "auto"),
         (bz2.open, ".BZ2", "auto"),
         (lzma.open, ".XZ", "auto"),
+        pytest.param(zstd.open, ".zst", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".zstd", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".ZST", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".ZSTD", "auto", marks=zstd_mark),
         (open, "", False),
         (gzip.open, "", "gzip"),
         (bz2.open, "", "bzip2"),
         (lzma.open, "", "lzma"),
+        pytest.param(zstd.open, "", "zstd", marks=zstd_mark),
+        pytest.param(zstd.open, "", "zstandard", marks=zstd_mark),
     ],
 )
 
@@ -167,7 +201,12 @@ def test_open_fd_invalid_compression():
 
 @pytest.mark.parametrize(
     "decompress,compression",
-    [(gzip.decompress, "gzip"), (bz2.decompress, "bzip2"), (lzma.decompress, "lzma")],
+    [
+        (gzip.decompress, "gzip"),
+        (bz2.decompress, "bzip2"),
+        (lzma.decompress, "lzma"),
+        pytest.param(zstd.decompress, "zstd", marks=zstd_mark),
+    ],
 )
 def test_open_fh_compression(decompress, compression):
     buf = io.BytesIO()
