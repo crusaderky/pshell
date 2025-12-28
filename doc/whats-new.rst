@@ -3,7 +3,9 @@
 What's New
 ==========
 
-.. _whats-new.1.5.0:
+v1.6.0 (unreleased)
+-------------------
+
 
 v1.5.0 (2025-12-28)
 -------------------
@@ -18,15 +20,11 @@ v1.5.0 (2025-12-28)
 - Handle deprecation in psutil 6
 
 
-.. _whats-new.1.4.0:
-
 v1.4.0 (2024-03-15)
 -------------------
 - Added formal support for Python 3.11 and 3.12 (the previous version works fine though)
 - Bumped minimum version of psutil from 5.4 to 5.6
 
-
-.. _whats-new.1.3.0:
 
 v1.3.0 (2022-03-26)
 -------------------
@@ -35,8 +33,6 @@ v1.3.0 (2022-03-26)
 - Bumped minimum version of psutil from 5.3 to 5.4
 - Added pre-commit hooks
 
-
-.. _whats-new.1.2.0:
 
 v1.2.0 (2020-07-01)
 -------------------
@@ -66,8 +62,6 @@ CI changes
 - Mandatory flake8, black, isort, and mypy
 
 
-.. _whats-new.1.1.0:
-
 v1.1.0 (2018-11-19)
 -------------------
 
@@ -79,8 +73,6 @@ v1.1.0 (2018-11-19)
 - New function :func:`killall`
 - New ``ignore_readonly`` parameter for :func:`remove`
 
-
-.. _whats-new.1.0.0:
 
 v1.0.0 (2018-10-11)
 -------------------
