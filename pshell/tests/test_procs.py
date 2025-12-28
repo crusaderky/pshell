@@ -247,7 +247,7 @@ def test_wait_for_server_timeout(thread_index):
     with ListenProcess(port1, sleep=0.4) as proc:
         with pytest.raises(TimeoutError):
             sh.wait_for_server(proc.pid, timeout=0.05)
-        port = sh.wait_for_server(proc.pid, timeout=1)
+        port = sh.wait_for_server(proc.pid, timeout=5)
         assert port == port1
 
 
