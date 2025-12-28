@@ -25,7 +25,7 @@ def spawn_test_proc(script_name, tmp_path):
     cmd = [sys.executable, str(tmp_path / script_name)]
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     assert popen.stdout is not None
-    assert popen.stdout.readline() == b"ready\n"
+    assert popen.stdout.readline().decode().strip() == "ready"
     popen.stdout.close()
     return psutil.Process(popen.pid)
 
