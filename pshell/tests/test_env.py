@@ -35,7 +35,13 @@ def test_resolve_env(str_or_path):
     bar = get_name("bar")
     os.environ[foo] = "foo"
     os.environ[bar] = "bar"
+
     out = sh.resolve_env(str_or_path(f"${foo}.${bar}"))
+    assert str(out) == "foo.bar"
+    assert isinstance(out, str_or_path)
+
+    # Variant syntax ${VAR}
+    out = sh.resolve_env(str_or_path(f"${{{foo}}}.${{{bar}}}"))
     assert str(out) == "foo.bar"
     assert isinstance(out, str_or_path)
 

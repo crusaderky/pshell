@@ -43,8 +43,8 @@ def test_context_log(caplog):
     log.error("%s %d", foo, 3)
     assert sh.get_logger().name == "pshell"
 
-    # caplog records all log calls from all threads.
-    # In pytest-run-parallel we need to filter first
+    # caplog records all log calls from all threads;
+    # in pytest-run-parallel we need to filter first.
     tups = [t for t in caplog.record_tuples if foo in t[2]]
 
     assert tups == [
