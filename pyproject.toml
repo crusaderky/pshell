@@ -6,7 +6,6 @@ description = "An alternative to bash scripts"
 keywords = ["bash", "shell"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Intended Audience :: Information Technology",
   "Programming Language :: Python",
