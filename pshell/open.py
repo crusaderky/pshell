@@ -66,7 +66,7 @@ def pshell_open(
             lzma compression (use :func:`lzma.open`)
         ``zstd``, ``zstandard``
             zstd compression (use :func:`compression.zstd.open`).
-            Requires Python 3.14+.
+            Requires either Python 3.14+ or the ``backports.zstd`` package.
         ``auto`` *(default)*:
             Automatically set compression if the file extension is ``.gz``,
             ``.bz2``, ``.xz``, ``.zst``, or ``.zstd`` (case insensitive)
@@ -139,21 +139,32 @@ def pshell_open(
     if compression is False:
         open_func = open
     elif compression == "gzip":
-        import gzip  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import gzip  # noqa: PLC0415
+        else:
+            import gzip  # noqa: PLC0415
 
         open_func = gzip.open
     elif compression == "bzip2":
-        import bz2  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import bz2  # noqa: PLC0415
+        else:
+            import bz2  # noqa: PLC0415
 
         open_func = bz2.open
     elif compression == "lzma":
-        import lzma  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import lzma  # noqa: PLC0415
+        else:
+            import lzma  # noqa: PLC0415
 
         open_func = lzma.open
     elif compression == "zstd":
-        if not _HAS_PY314:
-            raise ImportError("zstd compression requires Python 3.14+")
-        from compression import zstd  # noqa: PLC0415
+        if _HAS_PY314:
+            from compression import zstd  # noqa: PLC0415
+        else:
+            # Optional dependency; will raise ImportError if not installed
+            from backports import zstd  # noqa: PLC0415
 
         open_func = zstd.open
     else:

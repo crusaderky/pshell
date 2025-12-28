@@ -13,19 +13,29 @@ from pshell.tests import get_name
 
 HAS_PY314 = sys.version_info >= (3, 14)
 
-if HAS_PY314:
+if sys.version_info >= (3, 14):
     from compression import zstd
+
+    has_zstd = True
 else:
+    try:
+        from backports import zstd
 
-    class zstd:  # type: ignore[no-redef]  # noqa: N801
-        def open(*_args, **_kwargs):
-            raise AssertionError("unreachable")  # pragma: no cover
+        has_zstd = True
+    except ImportError:
 
-        def decompress(*_args, **_kwargs):
-            raise AssertionError("unreachable")  # pragma: no cover
+        class zstd:  # type: ignore[no-redef]  # noqa: N801
+            def open(*_args, **_kwargs):
+                raise AssertionError("unreachable")  # pragma: no cover
 
+            def decompress(*_args, **_kwargs):
+                raise AssertionError("unreachable")  # pragma: no cover
 
-zstd_mark = pytest.mark.skipif(not HAS_PY314, reason="zstd requires Python 3.14+")
+        has_zstd = False
+
+zstd_mark = pytest.mark.skipif(
+    not has_zstd, reason="zstd requires Python 3.14+ or backports.zstd"
+)
 
 
 compression_param = pytest.mark.parametrize(
@@ -213,12 +223,3 @@ def test_open_fh_no_compression(compression):
     buf = io.BytesIO()
     with pytest.raises(TypeError):
         sh.open(buf, compression=compression)
-
-
-@pytest.mark.skipif(HAS_PY314, reason="zstd is available")
-def test_zstd_unavailable():
-    """Test that the user is informed that zstd requires Python 3.14+"""
-    with pytest.raises(ImportError, match=r"3.14"):
-        sh.open("whatever.zst")
-    with pytest.raises(ImportError, match=r"3.14"):
-        sh.open("whatever", compression="zstd")

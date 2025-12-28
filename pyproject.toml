@@ -25,6 +25,9 @@ requires-python = ">=3.8"
 dependencies = ["psutil >= 5.7"]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+zstd = ["backports.zstd; python_version < '3.14'"]
+
 [project.urls]
 homepage = "https://github.com/crusaderky/pshell"
 issues = "https://github.com/crusaderky/pshell/issues"
@@ -188,6 +191,7 @@ ipython = { cmd = "ipython", description = "Launch IPython" }
 # Lowest python version supported by pytest 9; on 3.8 pytest config will be ignored
 [tool.pixi.feature.py310.dependencies]
 python = "=3.10"
+"backports.zstd" = "*" # python >=3.9,<3.14
 
 [tool.pixi.feature.py314.dependencies]
 python = "=3.14"
@@ -197,6 +201,7 @@ python-freethreading = "=3.14"
 pytest-run-parallel = "*"
 
 [tool.pixi.feature.mindeps.dependencies]
+# Note: also tests lack of zstd backport
 python = "=3.8"
 psutil = "=5.7"
 
