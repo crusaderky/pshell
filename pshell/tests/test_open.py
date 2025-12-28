@@ -3,12 +3,30 @@ import gzip
 import io
 import lzma
 import os
+import sys
 
 import psutil
 import pytest
 
 import pshell as sh
 from pshell.tests import get_name
+
+HAS_PY314 = sys.version_info >= (3, 14)
+
+if HAS_PY314:
+    from compression import zstd
+else:
+
+    class zstd:  # type: ignore[no-redef]  # noqa: N801
+        def open(*_args, **_kwargs):
+            raise AssertionError("unreachable")  # pragma: no cover
+
+        def decompress(*_args, **_kwargs):
+            raise AssertionError("unreachable")  # pragma: no cover
+
+
+zstd_mark = pytest.mark.skipif(not HAS_PY314, reason="zstd requires Python 3.14+")
+
 
 compression_param = pytest.mark.parametrize(
     "openfunc,ext,compression",
@@ -20,10 +38,16 @@ compression_param = pytest.mark.parametrize(
         (gzip.open, ".GZ", "auto"),
         (bz2.open, ".BZ2", "auto"),
         (lzma.open, ".XZ", "auto"),
+        pytest.param(zstd.open, ".zst", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".zstd", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".ZST", "auto", marks=zstd_mark),
+        pytest.param(zstd.open, ".ZSTD", "auto", marks=zstd_mark),
         (open, "", False),
         (gzip.open, "", "gzip"),
         (bz2.open, "", "bzip2"),
         (lzma.open, "", "lzma"),
+        pytest.param(zstd.open, "", "zstd", marks=zstd_mark),
+        pytest.param(zstd.open, "", "zstandard", marks=zstd_mark),
     ],
 )
 
@@ -167,7 +191,12 @@ def test_open_fd_invalid_compression():
 
 @pytest.mark.parametrize(
     "decompress,compression",
-    [(gzip.decompress, "gzip"), (bz2.decompress, "bzip2"), (lzma.decompress, "lzma")],
+    [
+        (gzip.decompress, "gzip"),
+        (bz2.decompress, "bzip2"),
+        (lzma.decompress, "lzma"),
+        pytest.param(zstd.decompress, "zstd", marks=zstd_mark),
+    ],
 )
 def test_open_fh_compression(decompress, compression):
     buf = io.BytesIO()
@@ -184,3 +213,12 @@ def test_open_fh_no_compression(compression):
     buf = io.BytesIO()
     with pytest.raises(TypeError):
         sh.open(buf, compression=compression)
+
+
+@pytest.mark.skipif(HAS_PY314, reason="zstd is available")
+def test_zstd_unavailable():
+    """Test that the user is informed that zstd requires Python 3.14+"""
+    with pytest.raises(ImportError, match=r"3.14"):
+        sh.open("whatever.zst")
+    with pytest.raises(ImportError, match=r"3.14"):
+        sh.open("whatever", compression="zstd")

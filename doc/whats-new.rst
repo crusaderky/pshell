@@ -11,6 +11,7 @@ v1.5.0 (unreleased)
 - Fixed threading race conditions in :func:`source` and :func:`symlink`
 - Fixed issue where :func:`remove` would fail to delete directories even with
   ``ignore_readonly=True``
+- Added zstandard (zstd) compression support to :func:`open` on Python 3.14+
 - Added formal support for Python 3.13 and 3.14 (the previous version works fine though)
 - Bumped minimum version of psutil from 5.6 to 5.7
 - Handle deprecation in psutil 6
