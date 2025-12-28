@@ -7,7 +7,7 @@ import time
 import pytest
 
 import pshell as sh
-from pshell.tests import DATADIR, StubError, unix_only, windows_only
+from pshell.tests import DATADIR, StubError, get_name, unix_only, windows_only
 
 if os.name == "nt":
     HELLO_CMD = [os.path.join(DATADIR, "hello.bat")]
@@ -58,20 +58,6 @@ def test_real_fh_crash():
     assert fh.getvalue() == "Hello world"
 
 
-@pytest.mark.skip(reason="no way of testing this with pytest")
-def test_real_fh_nosetests():  # pragma: nocover
-    # sys.stdout and sys.stderr have been monkey-patched by nosetests
-    # with a custom class (not io.StringIO!)
-    with sh.real_fh(sys.stdout) as rfh:
-        assert rfh is not sys.stdout
-        assert rfh.fileno() > 2
-        rfh.write("Hello world")
-    with sh.real_fh(sys.stderr) as rfh:
-        assert rfh is not sys.stderr
-        assert rfh.fileno() > 2
-        rfh.write("Hello world")
-
-
 def test_real_fh_fullpipe():
     # Exceed the typical size of a pipe (64 kbytes on Linux)
     # in an attempt to trigger a deadlock if the pipe isn't
@@ -109,9 +95,12 @@ def test_call_pipefail():
 
 
 @unix_only
-def test_call_obfuscate_pwd():
-    # TODO intercept logging
-    assert sh.call("echo -P mypass", obfuscate_pwd="mypass") == 0
+def test_call_obfuscate_pwd(caplog):
+    caplog.set_level(20)
+    n = get_name()
+    assert sh.call(f"echo -P mypass {n}", obfuscate_pwd="mypass") == 0
+    tups = [row for row in caplog.record_tuples if n in row[2]]
+    assert tups == [("pshell", 20, f"Executing: echo -P XXXX {n}")]
 
 
 def test_call_noshell1():
@@ -177,9 +166,12 @@ def test_check_call_pipefail():
 
 
 @unix_only
-def test_check_call_obfuscate_pwd():
-    # TODO intercept logging
-    sh.check_call("echo -P mypass", obfuscate_pwd="mypass")
+def test_check_call_obfuscate_pwd(caplog):
+    caplog.set_level(20)
+    n = get_name()
+    sh.check_call(f"echo -P mypass {n}", obfuscate_pwd="mypass")
+    tups = [row for row in caplog.record_tuples if n in row[2]]
+    assert tups == [("pshell", 20, f"Executing: echo -P XXXX {n}")]
 
 
 def test_check_call_noshell1():
@@ -267,9 +259,13 @@ def test_check_output_pipefail():
 
 
 @unix_only
-def test_check_output_obfuscate_pwd():
-    # TODO intercept logging
-    assert sh.check_output("echo -P mypass", obfuscate_pwd="mypass") == "-P mypass\n"
+def test_check_output_obfuscate_pwd(caplog):
+    caplog.set_level(20)
+    n = get_name()
+    out = sh.check_output(f"echo Hello world {n}", obfuscate_pwd="world")
+    assert out.strip() == f"Hello world {n}"
+    tups = [row for row in caplog.record_tuples if n in row[2]]
+    assert tups == [("pshell", 20, f"Executing: echo Hello XXXX {n}")]
 
 
 @unix_only

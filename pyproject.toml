@@ -19,7 +19,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: Free Threading :: 1 - Unstable",
+  "Programming Language :: Python :: Free Threading :: 3 - Stable",
   "Topic :: System :: System Shells",
 ]
 requires-python = ">=3.8"
@@ -51,6 +51,8 @@ python_files = ["test_*.py"]
 testpaths = ["pshell/tests"]
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  # pytest-run-parallel markers, needed when pytest-run-parallel is not installed
+  "thread_unsafe: marks tests that are not thread safe",
 ]
 filterwarnings = ["error"]
 
@@ -211,7 +213,6 @@ twine-check = { cmd = "python -m twine check dist/*" }
 twine-upload = { cmd = "python -m twine upload dist/*" }
 
 [tool.pixi.environments]
-# FIXME use same solve-groups with and without numba
 default = { features = ["py314", "docs", "smoke", "tests", "ipython"], solve-group = "py314" }
 dist = { features = ["dist"], no-default-feature = true }
 lint = { features = ["lint"], no-default-feature = true }

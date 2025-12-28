@@ -73,6 +73,13 @@ API Reference
    api/search
 
 
+Thread safety
+-------------
+pshell is fully thread safe and compatible with free-threading/noGIL interpreters.
+If thread safety is required, it is strongly recommended to use Python 3.14 or later;
+pshell does not work around bugs in earlier Python versions.
+
+
 Credits
 -------
 pshell was initially developed internally since 2014 as ``landg.bash`` by

@@ -1,6 +1,8 @@
 import getpass
 import multiprocessing
 import os
+import pathlib
+import shutil
 import socket
 import subprocess
 import sys
@@ -10,21 +12,21 @@ import psutil
 import pytest
 
 import pshell as sh
-from pshell.tests import DATADIR
+from pshell.tests import DATADIR, get_name
 
 pytestmark = pytest.mark.filterwarnings(
     r"ignore:subprocess \d+ is still running:ResourceWarning"
 )
 
 
-def spawn_test_proc():
+def spawn_test_proc(script_name, tmp_path):
     """Start a long-running process"""
-    if os.name == "nt":
-        cmd = [os.path.join(DATADIR, "sleep20.bat")]
-    else:
-        cmd = ["bash", os.path.join(DATADIR, "sleep20.sh")]
-
-    popen = subprocess.Popen(cmd)
+    shutil.copy(pathlib.Path(DATADIR) / script_name, tmp_path)
+    cmd = [sys.executable, str(tmp_path / script_name)]
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    assert popen.stdout is not None
+    assert popen.stdout.readline().decode().strip() == "ready"
+    popen.stdout.close()
     return psutil.Process(popen.pid)
 
 
@@ -44,25 +46,34 @@ def get_other_users_proc():
     raise OSError("All processes belong to the current user")  # pragma: nocover
 
 
-def test_find_kill_procs(str_or_path):
+def globbable_tmp_path(tmp_path: pathlib.Path, thread_index: int) -> pathlib.Path:
+    """In pytest_run_parallel, tmp_path is unique to the thread, but since it contains
+    thread_1 etc. this causes match collisions when you have 10 or more threads
+    """
+    idx = f"{thread_index:04d}"
+    (tmp_path / idx).mkdir()
+    return tmp_path / idx
+
+
+def test_find_kill_procs(str_or_path, tmp_path, thread_index):
     """Test pshell.find_procs_by_cmdline and pshell.kill"""
-    os.environ["TEST_DATADIR"] = DATADIR
+    tmp_path = globbable_tmp_path(tmp_path, thread_index)
+    n = get_name()
+    os.environ[n] = str(tmp_path)
 
     assert sh.find_procs_by_cmdline("this won't match anything") == []
-    assert sh.find_procs_by_cmdline("$TEST_DATADIR") == []
-    assert sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR")) == []
+    assert sh.find_procs_by_cmdline(str_or_path(f"${n}")) == []
+    test_proc = spawn_test_proc("sleep20.py", tmp_path)
 
-    test_proc = spawn_test_proc()
+    after = sh.find_procs_by_cmdline(str_or_path(tmp_path))
+    assert after == [test_proc]
 
-    after = sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR"))
-    # Both the bash and cmd variants of the test process spawn short-lived
-    # subprocesses. Testing for an exact match of 1 result causes instability
-    # in the unit tests.
-    assert test_proc in after
+    after = sh.find_procs_by_cmdline(str_or_path(f"${n}"))
+    assert after == [test_proc]
 
-    # Test substrings and OR'ed matches
-    after2 = sh.find_procs_by_cmdline("this won't match anything", DATADIR)
-    assert test_proc in after2
+    # Test OR'ed matches
+    after = sh.find_procs_by_cmdline("this won't match anything", str_or_path(tmp_path))
+    assert after == [test_proc]
 
     t1 = time.time()
     sh.kill(test_proc)
@@ -74,16 +85,16 @@ def test_find_kill_procs(str_or_path):
     with pytest.raises(psutil.NoSuchProcess):
         test_proc.status()
 
-    assert sh.find_procs_by_cmdline(str_or_path("$TEST_DATADIR")) == []
+    assert sh.find_procs_by_cmdline(str_or_path(f"${n}")) == []
 
 
-def test_killall(str_or_path):
-    spawn_test_proc()
-    # Test for 1+ processes.
-    # Don't test for exactly 1 process (see comment above)
-    assert sh.find_procs_by_cmdline(str_or_path(DATADIR))
-    sh.killall(str_or_path(DATADIR))
-    assert not sh.find_procs_by_cmdline(str_or_path(DATADIR))
+def test_killall(str_or_path, tmp_path, thread_index):
+    tmp_path = globbable_tmp_path(tmp_path, thread_index)
+
+    proc = spawn_test_proc("sleep20.py", tmp_path)
+    assert sh.find_procs_by_cmdline(str_or_path(tmp_path)) == [proc]
+    sh.killall(str_or_path(tmp_path))
+    assert not sh.find_procs_by_cmdline(str_or_path(tmp_path))
 
 
 def test_kill2():
@@ -117,16 +128,15 @@ def test_kill2():
     "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
     "unconditionally terminates the target process.",
 )
-def test_sigkill_sigterm_delay5():
+def test_sigkill_sigterm_delay5(tmp_path, thread_index):
     """Test that kill() will send a SIGTERM to kill the target first.  Process
     that shuts itself downupon receiving SIGTERM will be able to do so
     gracefully.
     """
-    cmd = [sys.executable, os.path.join(DATADIR, "sleep20_sigterm_delay5.py")]
-    subprocess.Popen(cmd)
-    time.sleep(1)  # to allow enough time for python to start
+    tmp_path = globbable_tmp_path(tmp_path, thread_index)
+    spawn_test_proc("sleep20_sigterm_delay5.py", tmp_path)
 
-    procs = sh.find_procs_by_cmdline(DATADIR)
+    procs = sh.find_procs_by_cmdline(tmp_path)
     assert len(procs) == 1
 
     t1 = time.time()
@@ -134,7 +144,7 @@ def test_sigkill_sigterm_delay5():
     t2 = time.time()
     duration_of_kill = t2 - t1
 
-    assert not sh.find_procs_by_cmdline(DATADIR)
+    assert not sh.find_procs_by_cmdline(tmp_path)
     assert duration_of_kill > 5  # target process SIGTERM handler delay is 5s
     assert duration_of_kill < 10  # sh.kill() will retry SIGKILL in 10s
 
@@ -144,30 +154,31 @@ def test_sigkill_sigterm_delay5():
     os.name == "nt",
     reason="On Windows, os.kill() and psutil.kill() calls TerminateProcess "
     "API which does not process signals (such as SIGTERM, SIGKILL "
-    "etc..) as ANSI/POSIX prescribed.  The TerminateProcess API "
+    "etc..) as ANSI/POSIX prescribed. The TerminateProcess API "
     "unconditionally terminates the target process.",
 )
 @pytest.mark.parametrize(
     "kwargs,min_elapsed,max_elapsed",
     [({}, 10, 12), ({"term_timeout": 3}, 3, 5), ({"term_timeout": 0}, 0, 2)],
 )
-def test_sigkill_sigterm_ignore(kwargs, min_elapsed, max_elapsed):
+def test_sigkill_sigterm_ignore(
+    kwargs, min_elapsed, max_elapsed, tmp_path, thread_index
+):
     """Test terminating processes resilient to SIGTERM, which would ignore the
     initial SIGTERM it receives.  The kill() will attempt to shut the process
     again later forcefully.
     """
-    cmd = [sys.executable, os.path.join(DATADIR, "sleep20_sigterm_ignore.py")]
-    subprocess.Popen(cmd)
-    time.sleep(1)  # to allow enough time for python to start
+    tmp_path = globbable_tmp_path(tmp_path, thread_index)
+    spawn_test_proc("sleep20_sigterm_ignore.py", tmp_path)
 
-    procs = sh.find_procs_by_cmdline(DATADIR)
+    procs = sh.find_procs_by_cmdline(tmp_path)
     assert len(procs) == 1
 
     t1 = time.time()
     sh.kill(procs[0], **kwargs)
     t2 = time.time()
     elapsed = t2 - t1
-    assert not sh.find_procs_by_cmdline(DATADIR)
+    assert not sh.find_procs_by_cmdline(tmp_path)
     if min_elapsed > 0:
         assert min_elapsed < elapsed
     assert elapsed < max_elapsed
@@ -214,39 +225,45 @@ class ListenProcess(multiprocessing.Process):
             time.sleep(1)
 
 
-def test_wait_for_server():
+def test_wait_for_server(thread_index):
+    port1 = 9100 + thread_index
     # Test with PID; the process is not listening straight away
-    with ListenProcess(9123, sleep=0.1) as proc:
+    with ListenProcess(port1, sleep=0.1) as proc:
         port = sh.wait_for_server(proc.pid)
-        assert port == 9123
+        assert port == port1
 
         # Test with psutil.Process; the process is already listening
         psproc = psutil.Process(proc.pid)
         port = sh.wait_for_server(psproc)
-        assert port == 9123
+        assert port == port1
 
     # Test dead process
     with pytest.raises(psutil.NoSuchProcess):
         sh.wait_for_server(psproc)
 
 
-def test_wait_for_server_timeout():
-    with ListenProcess(9123, sleep=0.4) as proc:
+def test_wait_for_server_timeout(thread_index):
+    port1 = 9100 + thread_index
+    with ListenProcess(port1, sleep=0.4) as proc:
         with pytest.raises(TimeoutError):
             sh.wait_for_server(proc.pid, timeout=0.05)
-        port = sh.wait_for_server(proc.pid, timeout=1)
-        assert port == 9123
+        port = sh.wait_for_server(proc.pid, timeout=5)
+        assert port == port1
 
 
-def test_wait_for_server_multiport_whitelist():
-    with ListenProcess(9123, 9124, sleep=0.2) as proc:
+def test_wait_for_server_multiport_whitelist(thread_index):
+    port1 = 9100 + thread_index
+    port2 = 9700 + thread_index
+    with ListenProcess(port1, port2, sleep=0.2) as proc:
         port = sh.wait_for_server(proc.pid)
-        assert port == 9123
-        port = sh.wait_for_server(proc.pid, 9124)
-        assert port == 9124
+        assert port == port1
+        port = sh.wait_for_server(proc.pid, port2)
+        assert port == port2
 
 
-def test_wait_for_server_multiport_blacklist():
-    with ListenProcess(9123, 9124, sleep=0.2) as proc:
-        port = sh.wait_for_server(proc.pid, ignore_ports=[9123])
-        assert port == 9124
+def test_wait_for_server_multiport_blacklist(thread_index):
+    port1 = 9100 + thread_index
+    port2 = 9700 + thread_index
+    with ListenProcess(port1, port2, sleep=0.2) as proc:
+        port = sh.wait_for_server(proc.pid, ignore_ports=[port1])
+        assert port == port2

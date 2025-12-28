@@ -8,6 +8,7 @@ import psutil
 import pytest
 
 import pshell as sh
+from pshell.tests import get_name
 
 compression_param = pytest.mark.parametrize(
     "openfunc,ext,compression",
@@ -28,51 +29,57 @@ compression_param = pytest.mark.parametrize(
 
 
 def check_fd_was_closed(fname):
+    """Verify that there aren't any open file handles with fname in their path"""
     fname = os.path.basename(fname)
     for tup in psutil.Process().open_files():
         assert fname not in tup.path
 
 
-def test_check_fd_was_closed(tmpdir):
+def test_check_fd_was_closed(tmp_path):
     check_fd_was_closed("notexist")
-    with open(f"{tmpdir}/test_open.123", "w"), pytest.raises(AssertionError):
-        check_fd_was_closed("test_open")
-    check_fd_was_closed("test_open")
+    n = get_name()
+    with open(tmp_path / (n + ".bits"), "w"), pytest.raises(AssertionError):
+        check_fd_was_closed(n)
+
+    check_fd_was_closed(n)
 
 
 @compression_param
-def test_open_context(str_or_path, tmpdir, openfunc, ext, compression):
-    os.environ["UNITTEST_BASH"] = str(tmpdir)
-    fname = f"{tmpdir}/test_open{ext}"
-    fname_env = str_or_path(f"$UNITTEST_BASH/test_open{ext}")
+def test_open_context(str_or_path, tmp_path, openfunc, ext, compression):
+    foo = get_name("foo")
+    bar = get_name("bar")
+    os.environ[foo] = str(tmp_path)
+    fname = f"{tmp_path}/{bar}{ext}"
+    fname_env = str_or_path(f"${foo}/{bar}{ext}")
 
     with sh.open(fname_env, "w", compression=compression) as fh:
         fh.write("Hello world")
-    check_fd_was_closed("test_open")
+    check_fd_was_closed(bar)
     with openfunc(fname, "rt") as fh:
         assert fh.read() == "Hello world"
     with sh.open(fname_env, "a", compression=compression) as fh:
         fh.write(" and universe")
-    check_fd_was_closed("test_open")
+    check_fd_was_closed(bar)
     with sh.open(fname_env, "r", compression=compression) as fh:
         assert fh.read() == "Hello world and universe"
-    check_fd_was_closed("test_open")
+    check_fd_was_closed(bar)
 
 
 @compression_param
-def test_open_nocontext(str_or_path, tmpdir, openfunc, ext, compression):
-    fname = str_or_path(f"{tmpdir}/test_open{ext}")
+def test_open_nocontext(str_or_path, tmp_path, openfunc, ext, compression):
+    n = get_name()
+    fname = str_or_path(f"{tmp_path}/{n}{ext}")
     fh = sh.open(fname, "w", compression=compression)
     fh.write("Hello world")
     fh.close()
-    check_fd_was_closed("test_open")
+    check_fd_was_closed(n)
     with openfunc(fname, "rt") as fh:
         assert fh.read() == "Hello world"
 
 
 @compression_param
-def test_open_exclusive_success(str_or_path, tmpdir, openfunc, ext, compression):
-    fname = str_or_path(f"{tmpdir}/test_open{ext}")
+def test_open_exclusive_success(str_or_path, tmp_path, openfunc, ext, compression):
+    fname = str_or_path(f"{tmp_path}/test_open{ext}")
     with sh.open(fname, "x", compression=compression) as fh:
         fh.write("Hello world")
     with openfunc(fname, "rt") as fh:
@@ -80,8 +87,8 @@ def test_open_exclusive_success(str_or_path, tmpdir, openfunc, ext, compression)
 
 
 @compression_param
-def test_open_exclusive_failure(tmpdir, openfunc, ext, compression):  # noqa: ARG001
-    fname = f"{tmpdir}/test_open{ext}"
+def test_open_exclusive_failure(tmp_path, openfunc, ext, compression):  # noqa: ARG001
+    fname = f"{tmp_path}/test_open{ext}"
     with open(fname, "w"):
         pass
     with pytest.raises(FileExistsError):
@@ -89,8 +96,8 @@ def test_open_exclusive_failure(tmpdir, openfunc, ext, compression):  # noqa: AR
 
 
 @compression_param
-def test_open_binary(str_or_path, tmpdir, openfunc, ext, compression):
-    fname = str_or_path(f"{tmpdir}/test_open{ext}")
+def test_open_binary(str_or_path, tmp_path, openfunc, ext, compression):
+    fname = str_or_path(f"{tmp_path}/test_open{ext}")
 
     with sh.open(fname, "wb", compression=compression) as fh:
         fh.write(b"Hello world")
@@ -103,11 +110,11 @@ def test_open_binary(str_or_path, tmpdir, openfunc, ext, compression):
 
 
 @compression_param
-def test_open_encoding(tmpdir, openfunc, ext, compression):
+def test_open_encoding(tmp_path, openfunc, ext, compression):
     text = "Crème brûlée"
     text_replaced = "Cr�me br�l�e"
-    fname_utf8 = f"{tmpdir}/test_utf8{ext}"
-    fname_latin1 = f"{tmpdir}/test_latin1{ext}"
+    fname_utf8 = f"{tmp_path}/test_utf8{ext}"
+    fname_latin1 = f"{tmp_path}/test_latin1{ext}"
 
     with openfunc(fname_utf8, "wt", encoding="utf-8") as fh:
         fh.write(text)
@@ -129,9 +136,9 @@ def test_open_encoding(tmpdir, openfunc, ext, compression):
 
 @compression_param
 @pytest.mark.parametrize("newline", ["\n", "\r", "\r\n"])
-def test_open_kwargs(tmpdir, openfunc, ext, compression, newline):
+def test_open_kwargs(tmp_path, openfunc, ext, compression, newline):
     # **kwargs are passed verbatim to the underlying function
-    fname = f"{tmpdir}/test_open{ext}"
+    fname = f"{tmp_path}/test_open{ext}"
 
     with sh.open(fname, "w", compression=compression, newline=newline) as fh:
         fh.write("Hello\nworld")

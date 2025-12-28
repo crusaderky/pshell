@@ -6,7 +6,6 @@ import datetime
 import errno
 import os
 import shutil
-import stat
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -87,9 +86,10 @@ def remove(
                     nonlocal has_errors
                     has_errors = True
                     try:
-                        # chmod u+w
+                        # chmod u+rwx
+                        # Note that directories need the 'x' bit!
                         mode = os.stat(path).st_mode
-                        os.chmod(path, mode | stat.S_IWUSR)
+                        os.chmod(path, mode | 0o700)
                     except OSError:  # pragma: nocover
                         pass
 
@@ -130,7 +130,13 @@ def remove(
 
 
 def chdir(path: str | Path) -> None:
-    """Move the present-working directory (pwd) into the target directory."""
+    """Move the present-working directory (pwd) into the target directory.
+
+    .. note::
+
+       This function changes the pwd for the entire process, and as such it
+       is thread-unsafe and not context-aware.
+    """
     path = Path(path)
     log.info("chdir %s", path)
     os.chdir(resolve_env(path))
@@ -151,6 +157,13 @@ def pushd(path: str | Path) -> Iterator[None]:
         pushd mydir
         ...
         popd
+
+
+    .. note::
+
+       This function changes the pwd for the entire process, not just the
+       code inside the with block, and as such it is thread-unsafe and not
+       context-aware.
     """
     path = Path(path)
     cwd = os.getcwd()
@@ -332,18 +345,13 @@ def symlink(
 
     log.info("Creating symlink %s => %s", src, dst)
 
-    if abspath:
-        os.symlink(real_src, real_dst)
-    else:
-        cwd_backup = os.getcwd()
-        os.chdir(os.path.realpath(os.path.dirname(real_dst)))
-        try:
-            # Generate shortest possible relative path
-            real_src = os.path.relpath(os.path.realpath(real_src))
-            real_dst = os.path.relpath(os.path.realpath(real_dst))
-            os.symlink(real_src, real_dst)
-        finally:
-            os.chdir(cwd_backup)
+    if not abspath:
+        # Generate shortest possible relative path
+        real_src = os.path.relpath(
+            os.path.realpath(real_src),
+            start=os.path.realpath(os.path.dirname(real_src)),
+        )
+    os.symlink(real_src, real_dst)
 
 
 def exists(path: str | Path) -> bool:
