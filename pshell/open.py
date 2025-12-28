@@ -173,4 +173,4 @@ def pshell_open(
             "'zstd', or 'zstandard'"
         )
 
-    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)  # type: ignore[arg-type, return-value]
+    return open_func(file, mode, encoding=encoding, errors=errors, **kwargs)  # type: ignore[arg-type]
