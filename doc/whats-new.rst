@@ -5,7 +5,7 @@ What's New
 
 .. _whats-new.1.5.0:
 
-v1.5.0 (unreleased)
+v1.5.0 (2025-12-28)
 -------------------
 - Audited thread safety of the whole codebase
 - Fixed threading race conditions in :func:`source` and :func:`symlink`
