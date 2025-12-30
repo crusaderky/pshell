@@ -23,7 +23,7 @@ Some of the core features:
   for auditing and debugging. It is strongly recommended to initialise the
   logging module and set the loglevel to INFO or DEBUG before invoking pshell.
 - All file paths can contain bash-style environment variables, which are
-  resolved on the fly. Failure to resolve and environment variable results in an
+  resolved on the fly. Failure to resolve an environment variable results in an
   :class:`EnvironmentError` being raised.
   You're safe from the dreaded ``rm -rf $MISSPELLED/*``!
 - Functions from the core library are wrapped, hardened, polished, and
