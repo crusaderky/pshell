@@ -13,7 +13,7 @@ Installing with conda
 
 .. code-block:: bash
 
-    conda install pshell -c conda-forge
+    conda install -c conda-forge pshell
 
 
 Installing with pip
