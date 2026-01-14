@@ -45,17 +45,17 @@ def real_fh(fh: IO | None) -> Any:
           `sys.stdout` and `sys.stderr`.
         - None (default for most subprocess functions)
 
-    Usage::
+    Usage:
 
-      buf = io.StringIO()
-      with real_fh(buf) as real_buf:
-          subprocess.check_call(cmd, stderr=real_buf)
+    >>> buf = io.StringIO()
+    >>> with sh.real_fh(buf) as real_buf:
+    ...     subprocess.check_call(cmd, stderr=real_buf)
 
     All pshell functions that wrap around :mod:`subprocess` internally use this
-    context manager. You don't need to use it explicitly::
+    context manager. You don't need to use it explicitly:
 
-      buf = io.StringIO()
-      pshell.check_call(cmd, stderr=buf)
+    >>> buf = io.StringIO()
+    >>> pshell.check_call(cmd, stderr=buf)
     """
     if fh is None:
         yield fh

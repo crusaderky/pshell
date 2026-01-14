@@ -147,17 +147,18 @@ def pushd(path: str | Path) -> Iterator[None]:
     """Context manager that moves the pwd into target directory. When leaving
     the context, the pwd is changed back to what it originally was.
 
-    Usage::
+    Usage:
 
-        with pushd("mydir"):
-            ...
+    >>> with pushd("mydir"):
+    ...     ...
 
-    Is equivalent to the bash commands::
+    Is equivalent to the bash commands:
+
+    .. code-block:: bash
 
         pushd mydir
         ...
         popd
-
 
     .. note::
 
@@ -195,7 +196,9 @@ def copy(src: str | Path, dst: str | Path, *, ignore: Callable | None = None) ->
 
     .. note::
        This function behaves slightly differently from bash when src is a
-       directory. bash alters its behaviour if dst exists or not, e.g.::
+       directory. bash alters its behaviour if dst exists or not, e.g.:
+
+       .. code-block:: bash
 
          $ mkdir foo
          $ touch foo/hello.txt
@@ -317,21 +320,21 @@ def symlink(
         absolute or relative paths, and regardless of the current working
         directory (cwd).
 
-    Examples::
+    Examples:
 
-        >>> sh.symlink('/common/foo', '/common/bar')
-        /common/foo => bar
+    >>> sh.symlink('/common/foo', '/common/bar')
+    /common/foo => bar
 
-        >>> sh.symlink('/common/foo', '/common/bar', abspath=True)
-        /common/foo => /common/bar
+    >>> sh.symlink('/common/foo', '/common/bar', abspath=True)
+    /common/foo => /common/bar
 
-        >>> sh.chdir('/common')
-        >>> sh.symlink('foo', 'bar')
-        /common/foo => bar
+    >>> sh.chdir('/common')
+    >>> sh.symlink('foo', 'bar')
+    /common/foo => bar
 
-        >>> sh.chdir('/common')
-        >>> sh.symlink('foo', 'bar', abspath=True)
-        /common/foo => /common/bar
+    >>> sh.chdir('/common')
+    >>> sh.symlink('foo', 'bar', abspath=True)
+    /common/foo => /common/bar
     """
     _unix_only()
 

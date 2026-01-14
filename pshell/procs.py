@@ -20,9 +20,9 @@ def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
     """Search all processes that have a partial match for at least one of the
     given command lines. Command lines are parsed through :func:`resolve_env`.
 
-    For example, the command::
+    For example, the command:
 
-        find_procs_by_cmdline('$MYROOT')
+    >>> sh.find_procs_by_cmdline('$MYROOT')
 
     will return a match for the following processes:
 
@@ -215,14 +215,11 @@ def wait_for_server(
 
     Example:
 
-    .. code-block:: python
-
-        import subprocess
-        import pshell
-
-        proc = subprocess.Popen(["redis-server"])
-        port = pshell.wait_for_server(proc.pid)
-        assert port == 6379
+    >>> import subprocess
+    >>> import pshell as sh
+    >>> proc = subprocess.Popen(["redis-server"])
+    >>> port = sh.wait_for_server(proc.pid)
+    >>> assert port == 6379
 
     This can also be used to start a server on port 0, which makes it
     atomically pick up a random free port, and then retrieve said port.

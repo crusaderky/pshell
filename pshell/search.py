@@ -122,19 +122,19 @@ def iglob(
     In case ``max_results`` is exceeded, the iteration will stop
     immediately - which will save time and memory.
 
-    Example::
+    Example:
 
-        >>> for fname in sh.glob("test*.txt", max_results=2):
-        >>>    print(fname)
-        FileMatchError: File match test*.txt produced 4 results, expected up
-                        to 2
+    >>> for fname in sh.glob("test*.txt", max_results=2):
+    >>>    print(fname)
+    FileMatchError: File match test*.txt produced 4 results, expected up
+                    to 2
 
-        >>> for fname in sh.iglob("test*.txt", max_results=2):
-        >>>    print(fname)
-        test1.txt
-        test2.txt
-        FileMatchError: File match test*.txt produced 3 or more results,
-                        expected up to 2
+    >>> for fname in sh.iglob("test*.txt", max_results=2):
+    >>>    print(fname)
+    test1.txt
+    test2.txt
+    FileMatchError: File match test*.txt produced 3 or more results,
+                    expected up to 2
     """
     if min_results < 0:
         raise ValueError("min_results must be greater than 0")
