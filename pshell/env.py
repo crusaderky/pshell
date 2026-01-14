@@ -15,6 +15,7 @@ from pshell.call import check_output
 __all__ = ("override_env", "putenv", "resolve_env", "source")
 
 
+@log.inc_stacklevel()
 def source(bash_file: str | Path, *, stderr: IO | None = None) -> None:
     """Emulate the bash command ``source <bash_file>``.
     The stdout of the command, if any, will be redirected to stderr.
@@ -78,11 +79,20 @@ def putenv(key: str, value: str | Path | None) -> None:
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
         :class:`~pathlib.Path` objects are transparently converted to strings.
     """
+    _putenv(key, value, set_msg="Setting", stacklevel=3)
+
+
+def _putenv(
+    key: str, value: str | Path | None, *, set_msg: str, stacklevel: int
+) -> None:
+    """Helper of putenv() and override_env() to have the correct stacklevel."""
     if value is None:
-        log.info("Deleting environment variable %s", key)
+        log.info("Deleting environment variable %s", key, stacklevel=stacklevel)
         os.environ.pop(key, None)
     else:
-        log.info("Setting environment variable %s=%s", key, value)
+        log.info(
+            "%s environment variable %s=%s", set_msg, key, value, stacklevel=stacklevel
+        )
         # Do NOT use os.putenv() - see python documentation
         os.environ[key] = resolve_env(str(value))
 
@@ -111,12 +121,12 @@ def override_env(key: str, value: str | Path | None) -> Iterator[None]:
     foo
     """
     orig = os.getenv(key)
-    putenv(key, value)
+    _putenv(key, value, set_msg="Setting", stacklevel=4)
 
     try:
         yield
     finally:
-        putenv(key, orig)
+        _putenv(key, orig, set_msg="Restoring", stacklevel=4)
 
 
 @overload

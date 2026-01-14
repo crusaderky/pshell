@@ -96,7 +96,7 @@ def glob(
     ):
         raise FileMatchError(pathname, min_results, max_results, len(results))
 
-    log.info("File match %s produced %d results", pathname, len(results))
+    log.info("File match %s produced %d results", pathname, len(results), stacklevel=2)
     return [Path(r) for r in results] if isinstance(pathname, Path) else results
 
 
@@ -151,4 +151,4 @@ def iglob(
     if count < min_results:
         raise FileMatchError(pathname, min_results, max_results, count)
 
-    log.info("File match %s produced %d results", pathname, count)
+    log.info("File match %s produced %d results", pathname, count, stacklevel=2)

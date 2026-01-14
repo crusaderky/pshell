@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import sys
 import tempfile
@@ -96,11 +97,10 @@ def test_call_pipefail():
 
 @unix_only
 def test_call_obfuscate_pwd(caplog):
-    caplog.set_level(20)
     n = get_name()
     assert sh.call(f"echo -P mypass {n}", obfuscate_pwd="mypass") == 0
     tups = [row for row in caplog.record_tuples if n in row[2]]
-    assert tups == [("pshell", 20, f"Executing: echo -P XXXX {n}")]
+    assert tups == [("pshell", logging.INFO, f"Executing: echo -P XXXX {n}")]
 
 
 def test_call_noshell1():
@@ -167,11 +167,10 @@ def test_check_call_pipefail():
 
 @unix_only
 def test_check_call_obfuscate_pwd(caplog):
-    caplog.set_level(20)
     n = get_name()
     sh.check_call(f"echo -P mypass {n}", obfuscate_pwd="mypass")
     tups = [row for row in caplog.record_tuples if n in row[2]]
-    assert tups == [("pshell", 20, f"Executing: echo -P XXXX {n}")]
+    assert tups == [("pshell", logging.INFO, f"Executing: echo -P XXXX {n}")]
 
 
 def test_check_call_noshell1():
@@ -260,12 +259,11 @@ def test_check_output_pipefail():
 
 @unix_only
 def test_check_output_obfuscate_pwd(caplog):
-    caplog.set_level(20)
     n = get_name()
     out = sh.check_output(f"echo Hello world {n}", obfuscate_pwd="world")
     assert out.strip() == f"Hello world {n}"
     tups = [row for row in caplog.record_tuples if n in row[2]]
-    assert tups == [("pshell", 20, f"Executing: echo Hello XXXX {n}")]
+    assert tups == [("pshell", logging.INFO, f"Executing: echo Hello XXXX {n}")]
 
 
 @unix_only

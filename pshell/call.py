@@ -137,7 +137,7 @@ def _call_cmd(
             ]
             shell = False
 
-    log.info("Executing: %s", log_cmd)
+    log.info("Executing: %s", log_cmd, stacklevel=3)
     return cmd, shell
 
 

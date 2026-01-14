@@ -36,6 +36,7 @@ def _unix_only() -> None:
         raise OSError("Not supported on Windows")  # pragma: nocover
 
 
+@log.inc_stacklevel()
 def remove(
     path: str | Path,
     *,
@@ -138,7 +139,7 @@ def chdir(path: str | Path) -> None:
        is thread-unsafe and not context-aware.
     """
     path = Path(path)
-    log.info("chdir %s", path)
+    log.info("chdir %s", path, stacklevel=2)
     os.chdir(resolve_env(path))
 
 
@@ -168,12 +169,12 @@ def pushd(path: str | Path) -> Iterator[None]:
     """
     path = Path(path)
     cwd = os.getcwd()
-    log.info("pushd %s", path)
+    log.info("pushd %s", path, stacklevel=3)
     os.chdir(resolve_env(path))
     try:
         yield
     finally:
-        log.info("popd")
+        log.info("popd", stacklevel=3)
         os.chdir(cwd)
 
 
@@ -184,7 +185,7 @@ def move(src: str | Path, dst: str | Path) -> None:
     exist. If the destination already exists but is not a directory, it may be
     overwritten depending on :func:`os.rename` semantics.
     """
-    log.info("Moving %s to %s", src, dst)
+    log.info("Moving %s to %s", src, dst, stacklevel=2)
     shutil.move(resolve_env(str(src)), resolve_env(str(dst)))
 
 
@@ -220,7 +221,7 @@ def copy(src: str | Path, dst: str | Path, *, ignore: Callable | None = None) ->
     :param ignore:
         Only effective when copying a directory. See :func:`shutil.copytree`.
     """
-    log.info("Copying %s to %s", src, dst)
+    log.info("Copying %s to %s", src, dst, stacklevel=2)
     src = resolve_env(src)
     dst = resolve_env(dst)
     if os.path.isdir(src):
@@ -251,6 +252,7 @@ def backup(
 ) -> Path | None: ...
 
 
+@log.inc_stacklevel()
 def backup(
     path: str | Path,
     *,
@@ -291,7 +293,7 @@ def backup(
     # In case of collision, call the subsequent backups as .2, .3, etc.
     i = 2
     while os.path.lexists(resolve_env(path_bak)):
-        log.info("%s already exists, generating a unique name")
+        log.info("%s already exists, generating a unique name", path_bak)
         path_bak = f"{path}.{suffix}.{i}"
         i += 1
 
@@ -303,6 +305,7 @@ def backup(
     return type(path)(path_bak)
 
 
+@log.inc_stacklevel()
 def symlink(
     src: str | Path, dst: str | Path, *, force: bool = False, abspath: bool = False
 ) -> None:
@@ -363,9 +366,9 @@ def exists(path: str | Path) -> bool:
     """
     respath = resolve_env(path)
     if os.path.exists(respath):
-        log.debug("File exists: %s", path)
+        log.debug("File exists: %s", path, stacklevel=2)
         return True
-    log.debug("File does not exist or is a broken symlink: %s", path)
+    log.debug("File does not exist or is a broken symlink: %s", path, stacklevel=2)
     return False
 
 
@@ -375,9 +378,9 @@ def lexists(path: str | Path) -> bool:
     """
     respath = resolve_env(path)
     if os.path.lexists(respath):
-        log.debug("File exists: %s", path)
+        log.debug("File exists: %s", path, stacklevel=2)
         return True
-    log.debug("File does not exist: %s", path)
+    log.debug("File does not exist: %s", path, stacklevel=2)
     return False
 
 
@@ -396,7 +399,7 @@ def mkdir(path: str | Path, *, parents: bool = True, force: bool = True) -> None
     """
     respath = resolve_env(path)
 
-    log.info("Creating directory %s", path)
+    log.info("Creating directory %s", path, stacklevel=2)
     try:
         if parents:
             os.makedirs(respath)
@@ -406,7 +409,7 @@ def mkdir(path: str | Path, *, parents: bool = True, force: bool = True) -> None
         # Cannot rely on checking for EEXIST, since the operating system
         # could give priority to other errors like EACCES or EROFS
         if force and os.path.isdir(respath):
-            log.info("Directory %s already exists", path)
+            log.info("Directory %s already exists", path, stacklevel=2)
         else:
             raise
 

@@ -56,7 +56,9 @@ def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
     matches = [resolve_env(str(x)) for x in cmdlines]
 
     log.debug(
-        "Finding processes that match command lines:\n  - %s", "\n  - ".join(matches)
+        "Finding processes that match command lines:\n  - %s",
+        "\n  - ".join(matches),
+        stacklevel=2,
     )
 
     procs = []
@@ -69,7 +71,7 @@ def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
 
             for match in matches:
                 if cmdline.find(match) != -1:
-                    log.debug("Process %d matches: %s", proc.pid, cmdline)
+                    log.debug("Process %d matches: %s", proc.pid, cmdline, stacklevel=2)
                     procs.append(proc)
                     break
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
@@ -83,6 +85,7 @@ def find_procs_by_cmdline(*cmdlines: str | Path) -> list[psutil.Process]:
     return procs
 
 
+@log.inc_stacklevel()
 def kill(*procs: int | psutil.Process | None, term_timeout: float = 10) -> None:
     """Send SIGTERM to one or more processes. After ``term_timeout`` seconds,
     send SIGKILL to the surviving processes.
@@ -178,6 +181,7 @@ def kill(*procs: int | psutil.Process | None, term_timeout: float = 10) -> None:
     log.info("All processes terminated")
 
 
+@log.inc_stacklevel()
 def killall(*cmdlines: str | Path, term_timeout: float = 10) -> None:
     """Find all processes with the target command line(s), send SIGTERM, and
     then send SIGKILL to the survivors.
