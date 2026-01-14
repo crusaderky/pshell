@@ -3,6 +3,11 @@
 What's New
 ==========
 
+v1.7.0 (unreleased)
+-------------------
+
+
+
 v1.6.0 (2026-01-14)
 -------------------
 - All log messages are reported as coming from the user's frames instead of from pshell
