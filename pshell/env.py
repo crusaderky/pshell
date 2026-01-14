@@ -100,15 +100,15 @@ def override_env(key: str, value: str | Path | None) -> Iterator[None]:
         It can be a reference other variables, e.g. ``${FOO}.${BAR}``.
         :class:`~pathlib.Path` objects are transparently converted to strings.
 
-    Example::
+    Example:
 
-        >>> print(os.environ['X'])
-        foo
-        >>> with override_env('X', 'bar'):
-        ...     print(os.environ['X'])
-        bar
-        >>> print(os.environ['X'])
-        foo
+    >>> print(os.environ['X'])
+    foo
+    >>> with sh.override_env('X', 'bar'):
+    ...     print(os.environ['X'])
+    bar
+    >>> print(os.environ['X'])
+    foo
     """
     orig = os.getenv(key)
     putenv(key, value)

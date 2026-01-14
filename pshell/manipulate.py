@@ -18,8 +18,11 @@ def concatenate(
     mode: str = "w",
     **kwargs: Any,
 ) -> None:
-    """Concatenate files. Python equivalent of
-    :command:`cat input_fnames[0] input_fnames[1] ... > output_fname`.
+    """Concatenate files. Python equivalent of:
+
+    .. code-block:: bash
+
+        cat input_fnames[0] input_fnames[1] ... > output_fname
 
     :param input_fnames:
         sequence of str. Paths to one or more input text files, to be appended
