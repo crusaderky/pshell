@@ -114,7 +114,7 @@ def iglob(
 
 def iglob(
     pathname: str | Path, *, min_results: int = 0, max_results: int | None = None
-) -> Iterator[str] | Iterator[Path]:
+) -> Iterator[str | Path]:
     """Like :func:`glob`, but returns an iterator instead.
     Notice that, unlike with glob, you may have time to process some of the
     results before :class:`FileMatchError` is raised.
@@ -124,12 +124,12 @@ def iglob(
 
     Example::
 
-        >>> for fname in glob("test*.txt", max_results=2):
+        >>> for fname in sh.glob("test*.txt", max_results=2):
         >>>    print(fname)
         FileMatchError: File match test*.txt produced 4 results, expected up
                         to 2
 
-        >>> for fname in iglob("test*.txt", max_results=2):
+        >>> for fname in sh.iglob("test*.txt", max_results=2):
         >>>    print(fname)
         test1.txt
         test2.txt

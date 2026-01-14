@@ -61,10 +61,10 @@ def remove(
         In this case, rename the file to <path>.DELETEME.<timestamp>.
         If the rename also fails, then raise OSError.
     :raise FileNotFoundError:
-        If ``force==False`` and path doesn't exist
+        If `force==False` and path doesn't exist
     :raise OSError:
-        - if ``rename_on_fail==False`` and path can't be deleted
-        - if ``rename_on_fail==True`` and path can be neither deleted nor
+        - if `rename_on_fail==False` and path can't be deleted
+        - if `rename_on_fail==True` and path can be neither deleted nor
           renamed
     """
     realpath = resolve_env(path)
@@ -261,16 +261,16 @@ def backup(
     :param path:
         File or directory to back up. Can be a string or a :class:`pathlib.Path`.
     :param str suffix:
-        suffix for the backup file. Default: .YYYYMMDD-HHMMSS
+        suffix for the backup file. Default: ``.YYYYMMDD-HHMMSS``
     :param bool force:
         if True, silently do nothing if file doesn't exist.
     :param str action:
-        copy|move
+        ``copy`` or ``move``
     :raise FileNotFoundError:
-        if path does not exist and force=False
+        if path does not exist and `force=False`
     :returns:
         renamed path, or None if no backup was performed.
-        If path is a :class:`~pathlib.Path`, then the return value is also a
+        If `path` is a :class:`~pathlib.Path`, then the return value is also a
         :class:`~pathlib.Path`.
     """
     assert action in ("copy", "move")
@@ -319,18 +319,18 @@ def symlink(
 
     Examples::
 
-        >>> symlink('/common/foo', '/common/bar')
+        >>> sh.symlink('/common/foo', '/common/bar')
         /common/foo => bar
 
-        >>> symlink('/common/foo', '/common/bar', abspath=True)
+        >>> sh.symlink('/common/foo', '/common/bar', abspath=True)
         /common/foo => /common/bar
 
-        >>> chdir('/common')
-        >>> symlink('foo', 'bar')
+        >>> sh.chdir('/common')
+        >>> sh.symlink('foo', 'bar')
         /common/foo => bar
 
-        >>> chdir('/common')
-        >>> symlink('foo', 'bar', abspath=True)
+        >>> sh.chdir('/common')
+        >>> sh.symlink('foo', 'bar', abspath=True)
         /common/foo => /common/bar
     """
     _unix_only()
