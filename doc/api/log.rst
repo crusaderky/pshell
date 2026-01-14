@@ -12,8 +12,11 @@ Setting and retrieving the pshell logger
 .. autodata:: pshell.context_logger
 
 :class:`~contextvars.ContextVar`. Context-local logger, for use in multithreaded and
-asynchronous code. This is not inherited when creating a new thread.
-See :mod:`contextvars` for more information on how context variables propagate.
+asynchronous code. On Python 3.14t and later free-threading nterpreters, this is
+inherited when creating a new thread; on most other interpreters, it's not; see
+:attr:`sys.flags.thread_inherit_context`. See :mod:`contextvars` for more information on
+how context variables propagate.
+
 Set to None to use the global logger instead.
 
 .. autofunction:: pshell.get_logger
@@ -25,3 +28,4 @@ Using the pshell logger
 .. autofunction:: pshell.log.warning
 .. autofunction:: pshell.log.error
 .. autofunction:: pshell.log.critical
+.. autofunction:: pshell.log.inc_stacklevel

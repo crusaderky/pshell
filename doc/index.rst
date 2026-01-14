@@ -38,15 +38,16 @@ Quick start
 >>> import pshell as sh
 >>> logging.basicConfig(
 ...     level=logging.INFO,
-...     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
->>>
+...     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s'
+>>> )
 >>> with sh.open("hello.txt", "w") as fh:
 ...     fh.write("Hello world!")
-2018-10-06 22:09:06,161 INFO [open.py:70] Opening 'hello.txt' for write
+2026-01-14 13:15:43,045 INFO [myscript.py:7] Opening 'hello.txt' for write
 >>> sh.mkdir("somedir")
-2018-10-06 22:10:28,969 INFO [file.py:298] Creating directory somedir
+2026-01-14 13:16:08,503 INFO [myscript.py:9] Creating directory somedir
 >>> sh.copy("hello.txt", "somedir/")
-2018-10-06 22:10:37,354 INFO [file.py:152] Copying hello.txt to somedir/
+2026-01-14 13:16:30,468 INFO [myscript.py:10] Copying hello.txt to somedir/
+
 
 Index
 -----

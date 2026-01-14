@@ -12,6 +12,7 @@ from pshell.open import pshell_open
 __all__ = ("concatenate",)
 
 
+@log.inc_stacklevel(3)
 def concatenate(
     input_fnames: Sequence[str | Path],
     output_fname: str | Path,
@@ -44,7 +45,7 @@ def concatenate(
     in binary mode, the inputs will too; no extra bytes will be added between
     files.
     """
-    log.info("Appending files: %s to: %s", input_fnames, output_fname)
+    log.info("Appending files: %s to: %s", input_fnames, output_fname, stacklevel=0)
 
     if "b" in mode:
         _concatenate_binary(input_fnames, output_fname, mode, **kwargs)

@@ -9,7 +9,6 @@ from pshell.tests import get_name
 
 @pytest.mark.thread_unsafe(reason="Modifies global logger")
 def test_global_log(caplog):
-    caplog.set_level(10)
     log.debug("%d", 1)
     assert sh.get_logger().name == "pshell"
     sh.set_global_logger(logging.getLogger("g1"))
@@ -23,10 +22,10 @@ def test_global_log(caplog):
     assert sh.get_logger().name == "pshell"
 
     assert caplog.record_tuples == [
-        ("pshell", 10, "1"),
-        ("g1", 20, "2"),
-        ("g2", 30, "3"),
-        ("pshell", 20, "4"),
+        ("pshell", logging.DEBUG, "1"),
+        ("g1", logging.INFO, "2"),
+        ("g2", logging.WARNING, "3"),
+        ("pshell", logging.INFO, "4"),
     ]
 
 
@@ -40,7 +39,7 @@ def test_context_log(caplog):
     log.error("%s %d", foo, 2)
     assert sh.get_logger().name == bar
     sh.context_logger.reset(tok)
-    log.error("%s %d", foo, 3)
+    log.critical("%s %d", foo, 3)
     assert sh.get_logger().name == "pshell"
 
     # caplog records all log calls from all threads;
@@ -48,7 +47,67 @@ def test_context_log(caplog):
     tups = [t for t in caplog.record_tuples if foo in t[2]]
 
     assert tups == [
-        ("pshell", 40, f"{foo} 1"),
-        (bar, 40, f"{foo} 2"),
-        ("pshell", 40, f"{foo} 3"),
+        ("pshell", logging.ERROR, f"{foo} 1"),
+        (bar, logging.ERROR, f"{foo} 2"),
+        ("pshell", logging.CRITICAL, f"{foo} 3"),
     ]
+
+
+def test_default_stacklevel():
+    """Test that the default stacklevel captures the function calling pshell"""
+    log.debug("debug")
+    log.info("info")
+    log.warning("warning")
+    log.error("error")
+    log.critical("critical")
+
+
+def test_custom_stacklevel():
+    """Teest that if the user passes the stacklevel parameter, it is respected
+    and matches the behaviour of the bare logging module.
+    """
+
+    def f():
+        log.info("from pshell", stacklevel=2)
+        logging.info("from logging", stacklevel=2)
+
+    f()
+
+
+def test_inc_stacklevel_simple():
+    @log.inc_stacklevel()
+    def f():
+        log.info("inside f()")
+
+    f()
+
+
+def test_inc_stacklevel_nested():
+    @log.inc_stacklevel(3)
+    def f():
+        g()
+
+    def g():
+        log.info("inside g()")
+
+    f()
+
+
+def test_inc_stacklevel_context_manager():
+    def f():
+        with log.inc_stacklevel(1):
+            log.info("inside f()")
+
+    f()
+
+
+def test_inc_stacklevel_nested_decorators():
+    @log.inc_stacklevel()
+    def f():
+        g()
+
+    @log.inc_stacklevel()
+    def g():
+        log.info("inside g()")
+
+    f()

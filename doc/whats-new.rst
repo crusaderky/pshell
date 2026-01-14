@@ -5,6 +5,8 @@ What's New
 
 v1.6.0 (unreleased)
 -------------------
+- All log messages are reported as coming from the user's frames instead of from pshell
+- New function :func:`log.inc_stacklevel`
 
 
 v1.5.0 (2025-12-28)

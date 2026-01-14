@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from pathlib import Path
@@ -31,3 +32,15 @@ if "pytest_run_parallel" not in sys.modules:
     @pytest.fixture
     def thread_index():
         return 0
+
+
+@pytest.fixture(autouse=True)
+def assert_log_stacklevel(request, caplog):
+    """Test that all log messages emitted by the test that uses this fixture are logged
+    as emitted by the test function itself, and not by pshell.
+    """
+    with caplog.at_level(logging.DEBUG):
+        yield
+    records = caplog.get_records("call")
+    for record in records:
+        assert record.filename == os.path.basename(request.node.fspath)

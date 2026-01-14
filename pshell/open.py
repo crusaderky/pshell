@@ -126,14 +126,22 @@ def pshell_open(
 
     # resolve env variables and write log message.
     if isinstance(file, (str, Path)):
-        log.info("Opening '%s' for %s%s", file, mode_label, compress_label)
+        log.info(
+            "Opening '%s' for %s%s", file, mode_label, compress_label, stacklevel=2
+        )
         file = resolve_env(file)
     elif isinstance(file, int):
         if compression:
             raise TypeError("compression not supported when opening a file descriptor")
-        log.info("Opening file descriptor %d for %s", file, mode_label)
+        log.info("Opening file descriptor %d for %s", file, mode_label, stacklevel=2)
     else:
-        log.info("Opening file handle for %s%s%s", file, mode_label, compress_label)
+        log.info(
+            "Opening file handle for %s%s%s",
+            file,
+            mode_label,
+            compress_label,
+            stacklevel=2,
+        )
 
     open_func: Callable[..., IO]
     if compression is False:
